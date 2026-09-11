@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>역사 영상 도서관 - History Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 헤더 (상단 바) -->
+  <header class="navbar">
+    <div class="logo">
+      <h1>🏛️ 역사 영상 도서관</h1>
+    </div>
+
+    <!-- 사용자 정보, 레벨 및 뱃지 표시 영역 -->
+    <div id="userInfoBar" class="user-info-bar" style="display: none;">
+      <span class="user-name" id="displayUserName">홍길동님</span>
+      <span class="user-level">⭐ Lv.<strong id="displayLevel">1</strong></span>
+      <span class="user-point">💰 <strong id="displayPoints">0</strong> PT</span>
+      <div class="user-badges" id="displayBadges"></div>
+    </div>
+
+    <!-- 우측 상단 버튼 영역 -->
+    <div class="auth-buttons">
+      <button class="btn btn-admin" id="adminBtn" onclick="openModal('adminModal')" style="display: none;">⚙️ 관리자 설정</button>
+      <button class="btn btn-outline" id="loginBtn" onclick="openModal('loginModal')">로그인</button>
+      <button class="btn btn-primary" id="signupBtn" onclick="openModal('signupModal')">회원가입</button>
+      <button class="btn btn-outline" id="logoutBtn" onclick="logout()" style="display: none;">로그아웃</button>
+    </div>
+  </header>
+
+  <!-- 메인 히어로 섹션 -->
+  <section class="hero">
+    <h2>타임머신을 타고 떠나는 역사 탐험</h2>
+    <p>영상을 시청하고 퀴즈 3문제를 모두 맞춰 레벨을 올리세요! 다음 단계 영상이 해금됩니다.</p>
+  </section>
+
+  <!-- 시대별 카테고리 필터 -->
+  <nav class="category-filter">
+    <button class="filter-btn active" onclick="filterVideo('all')">전체</button>
+    <button class="filter-btn" onclick="filterVideo('ancient')">고대·삼국</button>
+    <button class="filter-btn" onclick="filterVideo('goryeo')">고려시대</button>
+    <button class="filter-btn" onclick="filterVideo('joseon')">조선시대</button>
+    <button class="filter-btn" onclick="filterVideo('modern')">근현대사</button>
+  </nav>
+
+  <!-- 영상 도서관 리스트 -->
+  <main class="video-container">
+    <div class="video-grid" id="videoGrid"></div>
+  </main>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('loginModal')">&times;</span>
+      <h2>로그인</h2>
+      <form onsubmit="handleLogin(event)">
+        <input type="text" id="loginId" placeholder="아이디 (관리자: admin)" required>
+        <input type="password" id="loginPw" placeholder="비밀번호" required>
+        <button type="submit" class="btn btn-primary full-width">로그인</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 회원가입 모달 -->
+  <div id="signupModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('signupModal')">&times;</span>
+      <h2>회원가입</h2>
+      <form onsubmit="handleSignup(event)">
+        <input type="text" id="signupName" placeholder="이름 또는 닉네임" required>
+        <input type="text" id="signupId" placeholder="아이디" required>
+        <select id="signupGrade" required>
+          <option value="" disabled selected>학년 선택</option>
+          <option value="초6">초등학교 6학년</option>
+          <option value="중1">중학교 1학년</option>
+          <option value="중2">중학교 2학년</option>
+          <option value="중3">중학교 3학년</option>
+          <option value="고1">고등학교 1학년</option>
+        </select>
+        <input type="password" id="signupPw" placeholder="비밀번호" required>
+        <button type="submit" class="btn btn-primary full-width">가입하기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 영상 플레이어 모달 -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content video-modal-content">
+      <span class="close" onclick="closeVideoModal()">&times;</span>
+      <div class="iframe-container">
+        <iframe id="youtubePlayer" src="" frameborder="0" allow="autoplay" allowfullscreen></iframe>
+      </div>
+      <div class="video-modal-info">
+        <h3 id="videoModalTitle">영상 제목</h3>
+        <span id="watchedBadge" class="watched-tag" style="display:none;">✔️ 시청 및 퀴즈 완료</span>
+      </div>
+      <p id="videoModalDesc">영상 설명</p>
+      <button class="btn btn-primary full-width" id="startQuizBtn" onclick="openQuizModal()">📝 퀴즈 풀고 레벨업하기</button>
+    </div>
+  </div>
+
+  <!-- 퀴즈 모달 -->
+  <div id="quizModal" class="modal">
+    <div class="modal-content quiz-modal-content">
+      <span class="close" onclick="closeModal('quizModal')">&times;</span>
+      <h2>📜 역사 퀴즈 (3문제)</h2>
+      <p class="quiz-sub-desc">모든 문제를 맞춰야 레벨업과 포인트를 획득할 수 있습니다!</p>
+      
+      <div id="quizContainer">
+        <!-- 자바스크립트로 3문제가 출력됩니다 -->
+      </div>
+
+      <button class="btn btn-primary full-width" onclick="submitQuiz()">퀴즈 제출하기</button>
+    </div>
+  </div>
+
+  <!-- 관리자 모달 -->
+  <div id="adminModal" class="modal">
+    <div class="modal-content admin-modal-content">
+      <span class="close" onclick="closeModal('adminModal')">&times;</span>
+      <h2>⚙️ 관리자 시스템</h2>
+      
+      <div class="admin-tabs">
+        <button class="tab-btn active" onclick="switchAdminTab('videoTab')">영상 & 퀴즈 관리</button>
+        <button class="tab-btn" onclick="switchAdminTab('badgeTab')">뱃지 커스텀 관리</button>
+      </div>
+
+      <!-- 영상 및 퀴즈 등록 폼 -->
+      <div id="videoTab" class="admin-tab-content active">
+        <h3>새 영상 및 퀴즈 등록</h3>
+        <form onsubmit="handleAddVideo(event)">
+          <input type="text" id="adminVideoTitle" placeholder="영상 제목" required>
+          <div class="form-row">
+            <select id="adminVideoCategory" required>
+              <option value="ancient">고대·삼국</option>
+              <option value="goryeo">고려시대</option>
+              <option value="joseon">조선시대</option>
+              <option value="modern">근현대사</option>
+            </select>
+            <input type="number" id="adminReqLevel" placeholder="시청 가능 최소 레벨 (예: 1)" min="1" required>
+          </div>
+          <input type="text" id="adminYoutubeUrl" placeholder="유튜브 링크" required>
+          <input type="text" id="adminVideoDesc" placeholder="영상 간단 설명" required>
+
+          <hr class="divider">
+          <h4>📝 퀴즈 3문제 설정</h4>
+          <div class="quiz-input-group">
+            <input type="text" id="q1Text" placeholder="문제 1" required>
+            <input type="text" id="q1Ans" placeholder="문제 1 정답" required>
+          </div>
+          <div class="quiz-input-group">
+            <input type="text" id="q2Text" placeholder="문제 2" required>
+            <input type="text" id="q2Ans" placeholder="문제 2 정답" required>
+          </div>
+          <div class="quiz-input-group">
+            <input type="text" id="q3Text" placeholder="문제 3" required>
+            <input type="text" id="q3Ans" placeholder="문제 3 정답" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary full-width">영상 및 퀴즈 등록하기</button>
+        </form>
+      </div>
+
+      <!-- 뱃지 커스텀 등록 폼 -->
+      <div id="badgeTab" class="admin-tab-content">
+        <h3>커스텀 뱃지 추가 / 수정</h3>
+        <form onsubmit="handleAddBadge(event)">
+          <input type="text" id="badgeName" placeholder="뱃지 이름 (예: 조선 개국공신)" required>
+          <input type="text" id="badgeIcon" placeholder="뱃지 이모지 (예: 👑, 🛡️, ⚔️, 🏹)" required>
+          <div class="form-row">
+            <input type="number" id="badgePoints" placeholder="필요 포인트 (예: 2)" min="0" required>
+            <input type="number" id="badgeLevel" placeholder="필요 레벨 (예: 2)" min="1" required>
+          </div>
+          <button type="submit" class="btn btn-primary full-width">뱃지 저장하기</button>
+        </form>
+        <div class="badge-list-preview">
+          <h4>현재 설정된 뱃지 목록</h4>
+          <ul id="adminBadgeList"></ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
