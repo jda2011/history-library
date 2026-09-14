@@ -92,3 +92,17 @@ app.use(async (req, res, next) => {
 // ... (기존 라우터 설정들)
 
 module.exports = app;
+
+const connectDB = require('./db');
+const initAdmin = require('./initAdmin'); // 불러오기
+
+// DB 연결 미들웨어
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    await initAdmin(); // 계정이 없으면 입력하신 정보로 자동 생성
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'DB 연결 오류', error: error.message });
+  }
+});
