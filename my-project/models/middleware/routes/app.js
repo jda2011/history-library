@@ -29,3 +29,34 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+require('dotenv').config();
+const express = require('express');
+const connectDB = require('./db');
+const adminRouter = require('./routes/adminRouter');
+
+const app = express();
+
+// JSON 파싱 미들웨어
+app.use(express.json());
+
+// 모든 API 요청 처리 전에 DB 연결 상태 확인
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ message: '데이터베이스 연결 오류', error: error.message });
+  }
+});
+
+// 관리자 라우트 연결
+app.use('/api/admin', adminRouter);
+
+// 서버 상태 확인용 루트 경로
+app.get('/', (req, res) => {
+  res.send('Quiz App API Server is running');
+});
+
+// Vercel Serverless 배포를 위한 모듈 내보내기
+module.exports = app;
