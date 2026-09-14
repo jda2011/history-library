@@ -60,3 +60,13 @@ app.get('/', (req, res) => {
 
 // Vercel Serverless 배포를 위한 모듈 내보내기
 module.exports = app;
+
+const configRouter = require('./routes/configRouter');
+
+// ... 기존 미들웨어 및 라우터 설정 아래에 추가 ...
+
+// 사용자용 화면 설정 API
+app.use('/api/config', configRouter);
+
+// 관리자 API
+app.use('/api/admin', adminRouter);
