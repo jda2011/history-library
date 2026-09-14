@@ -88,3 +88,38 @@ router.put('/config', async (req, res) => {
     res.status(500).json({ message: '설정 변경 실패', error: error.message });
   }
 });
+
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt'); // 비밀번호 암호화용 (설치 필요: npm install bcrypt)
+const User = require('../models/User'); // 사용자 모델
+
+// PUT /api/admin/change-password - 비밀번호 변경
+router.put('/change-password', async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id; // 로그인 미들웨어를 통해 얻은 사용자 ID
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
+    }
+
+    // 기존 비밀번호 확인
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: '현재 비밀번호가 일치하지 않습니다.' });
+    }
+
+    // 새 비밀번호 암호화 후 저장
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ message: '비밀번호 변경 실패', error: error.message });
+  }
+});
+
+module.exports = router;
