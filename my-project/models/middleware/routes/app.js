@@ -26,3 +26,8 @@ app.use('/api/config', configRouter);  // 일반 사용자 화면 설정 불러�
 app.use('/api/admin', adminRouter);    // 관리자 기능 (설정 변경, 비번 변경 등)
 
 module.exports = app;
+
+const cors = require('cors');
+
+// 모든 도메인에서의 API 호출 허용 (또는 프론트엔드 URL만 허용 가능)
+app.use(cors());
