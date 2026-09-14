@@ -70,3 +70,25 @@ app.use('/api/config', configRouter);
 
 // 관리자 API
 app.use('/api/admin', adminRouter);
+
+const express = require('express');
+const connectDB = require('./db');
+const initAdmin = require('./initAdmin'); // 1. initAdmin 불러오기
+
+const app = express();
+app.use(express.json());
+
+// 데이터베이스 연결 및 관리자 자동 생성
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    await initAdmin(); // 2. 요청 처리 전 관리자 계정 유무 확인 후 자동 생성
+    next();
+  } catch (error) {
+    res.status(500).json({ message: '데이터베이스 연결 오류', error: error.message });
+  }
+});
+
+// ... (기존 라우터 설정들)
+
+module.exports = app;
