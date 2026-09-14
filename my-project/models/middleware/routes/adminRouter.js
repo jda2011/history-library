@@ -160,6 +160,46 @@ router.post('/register', async (req, res) => {
 
     await newUser.save();
     res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+    // POST /api/auth/register - 회원가입
+router.post('/register', async (req, res) => {
+  try {
+    const { username, email, password, grade, adminCode } = req.body;
+
+    // 이미 가입된 이메일인지 확인
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
+    }
+
+    // 내가 정한 비밀 코드 (예: 'mySuperSecret123')가 일치하면 admin 권한 부여
+    let userRole = 'user';
+    if (adminCode && adminCode === 'mySuperSecret123') { // <--- 내가 사용할 비밀코드 지정
+      userRole = 'admin';
+    }
+
+    // 비밀번호 암호화
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // 사용자 생성
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      grade,
+      role: userRole
+    });
+
+    await newUser.save();
+    
+    res.status(201).json({ 
+      message: userRole === 'admin' ? '관리자 계정 가입 성공!' : '회원가입 성공!',
+      role: userRole 
+    });
+  } catch (error) {
+    res.status(500).json({ message: '회원가입 실패', error: error.message });
+  }
+});
   } catch (error) {
     res.status(500).json({ message: '회원가입 처리 중 오류 발생', error: error.message });
   }
