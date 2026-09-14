@@ -70,3 +70,21 @@ router.post('/quiz', async (req, res) => {
 });
 
 module.exports = router;
+
+// 메인 화면 기본 설정 변경 (관리자 전용)
+router.put('/config', async (req, res) => {
+  try {
+    const { mainBannerTitle, mainBannerDescription, heroVideoUrl } = req.body;
+
+    // 기존 설정을 찾아서 업데이트하거나 없으면 새로 생성
+    const updatedConfig = await SiteConfig.findOneAndUpdate(
+      {},
+      { mainBannerTitle, mainBannerDescription, heroVideoUrl },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: '화면 설정이 변경되었습니다.', config: updatedConfig });
+  } catch (error) {
+    res.status(500).json({ message: '설정 변경 실패', error: error.message });
+  }
+});
