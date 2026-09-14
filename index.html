@@ -192,3 +192,76 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>로그인</title>
+  <style>
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 300px;
+    }
+    .password-wrapper input {
+      width: 100%;
+      padding: 10px;
+      padding-right: 65px; /* 버튼이 들어갈 자리 */
+      box-sizing: border-box;
+    }
+    .toggle-btn {
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #0070f3;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>로그인</h2>
+  <form id="loginForm">
+    <div class="form-group">
+      <label for="username">아이디</label><br>
+      <input type="text" id="username" placeholder="아이디를 입력하세요" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">비밀번호</label><br>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="비밀번호를 입력하세요" required>
+        <button type="button" id="toggleBtn" class="toggle-btn">표시</button>
+      </div>
+    </div>
+
+    <button type="submit">로그인</button>
+  </form>
+
+  <script>
+    // 1. 화면의 요소들을 가져옵니다.
+    const passwordInput = document.getElementById('password');
+    const toggleBtn = document.getElementById('toggleBtn');
+
+    // 2. 버튼 클릭 이벤트를 등록합니다.
+    toggleBtn.addEventListener('click', function() {
+      // 현재 type이 password인지 확인
+      const isPassword = passwordInput.getAttribute('type') === 'password';
+
+      // type을 반대로 변경 (password -> text / text -> password)
+      passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+
+      // 버튼의 글자 변경
+      toggleBtn.textContent = isPassword ? '숨기기' : '표시';
+    });
+  </script>
+
+</body>
+</html>
