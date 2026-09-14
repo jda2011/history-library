@@ -27,3 +27,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`서버가 포트 ${PORT}에서 실행 중입니다.`);
 });
+
+module.exports = app;
