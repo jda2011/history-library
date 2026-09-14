@@ -123,3 +123,44 @@ router.put('/change-password', async (req, res) => {
 });
 
 module.exports = router;
+
+// POST /api/auth/register
+router.post('/register', async (req, res) => {
+  try {
+    const { username, email, password, grade } = req.body;
+
+    // 학년/연령대 유효성 검사
+    const validGrades = [
+      'UNDER_13',
+      'ELEMENTARY_1', 'ELEMENTARY_2', 'ELEMENTARY_3', 'ELEMENTARY_4', 'ELEMENTARY_5', 'ELEMENTARY_6',
+      'MIDDLE_1', 'MIDDLE_2', 'MIDDLE_3',
+      'HIGH_1', 'HIGH_2', 'HIGH_3',
+      'OVER_19'
+    ];
+
+    if (!grade || !validGrades.includes(grade)) {
+      return res.status(400).json({ message: '올바른 학년 또는 연령대를 선택해 주세요.' });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: '이미 가입된 이메일입니다.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      grade,
+      role: 'user'
+    });
+
+    await newUser.save();
+    res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ message: '회원가입 처리 중 오류 발생', error: error.message });
+  }
+});
