@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 
 // 관리자가 직접 입력하는 퀴즈 문항 구조 (4~5개)
