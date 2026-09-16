@@ -7,3 +7,8 @@ module.exports = app;
 const app = require('../app');
 
 module.exports = app;
+
+// api/index.js
+const app = require('../app');
+
+module.exports = app;
