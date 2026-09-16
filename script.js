@@ -1,5 +1,5 @@
 // script.js 상단
-const BASE_URL = ''; // 빈 값으로 지정하면 동일한 Vercel 도메인의 /api/ 로 자동 연결됩니다.
+const BASE_URL = 'http://localhost:5000';
 
 let currentVideoId = null;
 
