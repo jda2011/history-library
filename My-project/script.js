@@ -441,3 +441,47 @@ function handleLogout() {
   checkLoginStatus();
   showSection('mainSection');
 }
+
+// 1. script.js 파일 최상단에 추가 (백엔드 실행 포트가 5000일 경우)
+const BASE_URL = 'http://localhost:5000'; 
+
+// 2. applyBackground 함수 수정
+async function applyBackground() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/config`); // BASE_URL 추가
+    if (!res.ok) return;
+    const config = await res.json();
+    // ... 기존 동일
+  } catch (err) {
+    console.error('배경 불러오기 실패:', err);
+  }
+}
+
+// 3. handleRegister 함수 수정
+async function handleRegister(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const grade = document.getElementById('regGrade').value;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/auth/register`, { // BASE_URL 추가
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, grade })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('회원가입이 완료되었습니다!');
+      document.getElementById('registerForm').reset();
+      showSection('loginSection');
+    } else {
+      alert(data.message || '회원가입 실패');
+    }
+  } catch (err) {
+    alert('서버 통신 오류가 발생했습니다.');
+  }
+}
