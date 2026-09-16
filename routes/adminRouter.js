@@ -128,3 +128,36 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+
+const express = require('express');
+const router = express.Router();
+const SiteConfig = require('../models/SiteConfig');
+const { verifyAdmin } = require('../middleware/auth'); // 보안 미들웨어 연결
+
+// PUT /api/admin/config - 관리자 전용 배경 및 메인 설정 변경
+router.put('/config', verifyAdmin, async (req, res) => {
+  try {
+    const { mainBannerTitle, mainBannerDescription, backgroundImageUrl, backgroundColor } = req.body;
+
+    const updatedConfig = await SiteConfig.findOneAndUpdate(
+      {},
+      { 
+        mainBannerTitle, 
+        mainBannerDescription, 
+        backgroundImageUrl,
+        backgroundColor,
+        updatedAt: Date.now()
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({
+      message: '배경 및 화면 설정이 성공적으로 저장되었습니다.',
+      config: updatedConfig
+    });
+  } catch (error) {
+    res.status(500).json({ message: '설정 수정 실패', error: error.message });
+  }
+});
+
+module.exports = router;
