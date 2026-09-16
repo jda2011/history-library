@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const Video = require('../models/Video');
@@ -93,39 +92,6 @@ router.post('/:id/submit', verifyToken, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: '퀴즈 제출 처리 실패', error: error.message });
-  }
-});
-
-module.exports = router;
-
-const express = require('express');
-const router = express.Router();
-const Video = require('../models/Video');
-
-// POST /api/videos - 동영상 및 퀴즈 등록
-router.post('/', async (req, res) => {
-  try {
-    const { title, videoUrl, targetGrade, quizzes } = req.body;
-
-    if (!title || !videoUrl || !quizzes || quizzes.length === 0) {
-      return res.status(400).json({ message: '제목, URL 및 퀴즈 항목을 모두 입력해 주세요.' });
-    }
-
-    const newVideo = new Video({
-      title,
-      videoUrl,
-      targetGrade,
-      quizzes
-    });
-
-    await newVideo.save();
-
-    res.status(201).json({
-      message: '동영상 및 퀴즈 등록 성공',
-      videoId: newVideo._id
-    });
-  } catch (error) {
-    res.status(500).json({ message: '동영상 등록 실패', error: error.message });
   }
 });
 
