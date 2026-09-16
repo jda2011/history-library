@@ -61,6 +61,23 @@ async function applyBackground() {
   }
 }
 
+// 회원가입 (완료 후 입력창 초기화 및 로그인 화면으로 이동)
+async function handleRegister(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const grade = document.getElementById('regGrade').value;
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, grade })
+    });
+
+    const data = await res.json();
+    
 // 상단에 서버 base URL 변수 추가
 const BASE_URL = 'http://localhost:5000'; // 백엔드 포트에 맞춰 수정하세요
 
