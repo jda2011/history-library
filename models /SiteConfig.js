@@ -25,4 +25,3 @@ const siteConfigSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('SiteConfig', siteConfigSchema);
-
