@@ -307,3 +307,137 @@ function addQuizInput() {
   `;
   container.appendChild(div);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  applyBackground();
+  checkLoginStatus();
+
+  document.getElementById('registerForm').addEventListener('submit', handleRegister);
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
+});
+
+// 섹션 전환 (회원가입/로그인/메인)
+function showSection(sectionId) {
+  document.querySelectorAll('.content-section').forEach(sec => sec.style.display = 'none');
+  document.getElementById(sectionId).style.display = 'block';
+}
+
+// 비밀번호 보이기 / 숨기기 토글
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isPassword = input.type === 'password';
+  input.type = isPassword ? 'text' : 'password';
+  btn.textContent = isPassword ? '숨기기' : '표시';
+}
+
+// 관리자가 설정한 배경 적용
+async function applyBackground() {
+  try {
+    const res = await fetch('/api/config');
+    const config = await res.json();
+    
+    if (config.mainBannerTitle) {
+      document.getElementById('bannerTitle').textContent = config.mainBannerTitle;
+    }
+    if (config.mainBannerDescription) {
+      document.getElementById('bannerDesc').textContent = config.mainBannerDescription;
+    }
+
+    if (config.backgroundImageUrl) {
+      document.body.style.backgroundImage = `url('${config.backgroundImageUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+    } else if (config.backgroundColor) {
+      document.body.style.backgroundColor = config.backgroundColor;
+    }
+  } catch (err) {
+    console.error('배경 적용 실패:', err);
+  }
+}
+
+// 회원가입 처리 (성공 시 입력창 즉시 초기화 및 메인 이동)
+async function handleRegister(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const grade = document.getElementById('regGrade').value;
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, grade })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('회원가입이 완료되었습니다!');
+      
+      // 폼 비우기 (개인정보 노출 방지)
+      document.getElementById('registerForm').reset();
+      
+      // 회원가입 완료 후 로그인 섹션으로 이동
+      showSection('loginSection');
+    } else {
+      alert(data.message || '가입 실패');
+    }
+  } catch (err) {
+    alert('서버 통신 오류가 발생했습니다.');
+  }
+}
+
+// 로그인 처리 (토큰 저장)
+async function handleLogin(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('로그인되었습니다!');
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      document.getElementById('loginForm').reset();
+      checkLoginStatus();
+      showSection('mainSection');
+    } else {
+      alert(data.message || '로그인 실패');
+    }
+  } catch (err) {
+    alert('서버 통신 오류가 발생했습니다.');
+  }
+}
+
+// 로그인 상태 체크 및 헤더 변경
+function checkLoginStatus() {
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  if (token && user) {
+    document.getElementById('authNav').style.display = 'none';
+    document.getElementById('userNav').style.display = 'block';
+    document.getElementById('userInfo').textContent = `${user.username} 님 (${user.badgeRank || '초보 사관'}) - ${user.points || 0}P`;
+  } else {
+    document.getElementById('authNav').style.display = 'block';
+    document.getElementById('userNav').style.display = 'none';
+  }
+}
+
+// 로그아웃
+function handleLogout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  checkLoginStatus();
+  showSection('mainSection');
+}
