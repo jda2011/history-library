@@ -92,3 +92,158 @@
   </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>역사 도서관 - 관리자 동영상 및 퀴즈 등록</title>
+  <style>
+    body { font-family: 'Malgun Gothic', sans-serif; background-color: #fff8e7; padding: 20px; color: #333; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h1, h2 { color: #8b4513; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: bold; margin-bottom: 8px; }
+    input[type="text"], input[type="url"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    .checkbox-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: #f9f9f9; padding: 15px; border-radius: 6px; }
+    .quiz-card { background: #fffbe6; border: 1px solid #ffe58f; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .option-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+    .btn-submit { width: 100%; padding: 15px; background: #ff8c00; color: white; font-size: 18px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-submit:hover { background: #e07b00; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📜 역사 동영상 및 퀴즈 등록 (관리자 전용)</h1>
+  
+  <form id="videoAdminForm" onsubmit="submitVideoData(event)">
+    <!-- 1. 기본 동영상 정보 -->
+    <div class="form-group">
+      <label for="videoTitle">동영상 제목</label>
+      <input type="text" id="videoTitle" placeholder="예: 삼국시대의 성립과 발전" required />
+    </div>
+
+    <div class="form-group">
+      <label for="videoUrl">동영상 URL (유튜브 링크 등)</label>
+      <input type="url" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required />
+    </div>
+
+    <div class="form-group">
+      <label>시청 대상 연령대 (다중 선택 가능)</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="targetGrade" value="UNDER_13"> 만 13세 미만</label>
+        <label><input type="checkbox" name="targetGrade" value="ELEMENTARY_6"> 초등학교 6학년</label>
+        <label><input type="checkbox" name="targetGrade" value="MIDDLE_1"> 중학교 1학년</label>
+        <label><input type="checkbox" name="targetGrade" value="MIDDLE_2"> 중학교 2학년</label>
+        <label><input type="checkbox" name="targetGrade" value="MIDDLE_3"> 중학교 3학년</label>
+        <label><input type="checkbox" name="targetGrade" value="HIGH_1"> 고등학교 1학년</label>
+        <label><input type="checkbox" name="targetGrade" value="HIGH_2"> 고등학교 2학년</label>
+        <label><input type="checkbox" name="targetGrade" value="HIGH_3"> 고등학교 3학년</label>
+        <label><input type="checkbox" name="targetGrade" value="OVER_19"> 만 19세 이상</label>
+      </div>
+    </div>
+
+    <!-- 2. 퀴즈 4문항 작성 구역 -->
+    <h2>❓ 학습 퀴즈 (4~5문항)</h2>
+    <div id="quizContainer"></div>
+
+    <button type="submit" class="btn-submit">동영상 및 퀴즈 등록하기</button>
+  </form>
+</div>
+
+<script>
+  // 페이지 로드 시 4개의 퀴즈 입력 폼 자동 생성
+  document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('quizContainer');
+    for (let i = 1; i <= 4; i++) {
+      container.appendChild(createQuizForm(i));
+    }
+  });
+
+  // 퀴즈 1개 세트 템플릿 생성 함수
+  function createQuizForm(index) {
+    const card = document.createElement('div');
+    card.className = 'quiz-card';
+    card.innerHTML = `
+      <h3>문제 ${index}</h3>
+      <div class="form-group">
+        <input type="text" class="quiz-question" placeholder="퀴즈 질문을 입력하세요" required />
+      </div>
+      <div class="option-group">
+        <input type="text" class="quiz-opt-0" placeholder="보기 1" required />
+        <input type="text" class="quiz-opt-1" placeholder="보기 2" required />
+        <input type="text" class="quiz-opt-2" placeholder="보기 3" required />
+        <input type="text" class="quiz-opt-3" placeholder="보기 4" required />
+      </div>
+      <div class="form-group">
+        <label>정답 선택:</label>
+        <select class="quiz-correct" required>
+          <option value="0">보기 1번 정답</option>
+          <option value="1">보기 2번 정답</option>
+          <option value="2">보기 3번 정답</option>
+          <option value="3">보기 4번 정답</option>
+        </select>
+      </div>
+    `;
+    return card;
+  }
+
+  // 폼 제출 시 백엔드 API 호출
+  async function submitVideoData(e) {
+    e.preventDefault();
+
+    // 선택된 연령대 수집
+    const targetGrades = Array.from(document.querySelectorAll('input[name="targetGrade"]:checked'))
+                             .map(cb => cb.value);
+
+    if (targetGrades.length === 0) {
+      alert('최소 하나 이상의 시청 대상 연령대를 선택해 주세요.');
+      return;
+    }
+
+    // 퀴즈 데이터 수집
+    const quizCards = document.querySelectorAll('.quiz-card');
+    const quizzes = Array.from(quizCards).map(card => {
+      return {
+        question: card.querySelector('.quiz-question').value.trim(),
+        options: [
+          card.querySelector('.quiz-opt-0').value.trim(),
+          card.querySelector('.quiz-opt-1').value.trim(),
+          card.querySelector('.quiz-opt-2').value.trim(),
+          card.querySelector('.quiz-opt-3').value.trim()
+        ],
+        correctAnswer: parseInt(card.querySelector('.quiz-correct').value, 10)
+      };
+    });
+
+    const payload = {
+      title: document.getElementById('videoTitle').value.trim(),
+      videoUrl: document.getElementById('videoUrl').value.trim(),
+      targetGrade: targetGrades,
+      quizzes: quizzes
+    };
+
+    try {
+      const response = await fetch('/api/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert('동영상과 퀴즈가 성공적으로 등록되었습니다!');
+        document.getElementById('videoAdminForm').reset();
+      } else {
+        alert(result.message || '등록 중 오류가 발생했습니다.');
+      }
+    } catch (err) {
+      alert('서버와 통신할 수 없습니다.');
+    }
+  }
+</script>
+
+</body>
+</html>
