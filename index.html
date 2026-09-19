@@ -7,6 +7,60 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- 네비게이션 헤더 -->
+  <header class="navbar">
+    <div class="logo">📜 역사 동영상 도서관</div>
+    <div class="nav-buttons">
+      <button id="navLoginBtn" type="button" class="btn-login">로그인</button>
+      <button id="navRegisterBtn" type="button" class="btn-register">회원가입</button>
+    </div>
+  </header>
+
+  <!-- 메인 영역 -->
+  <main>
+    <!-- 홈 화면 -->
+    <div id="homeSection" class="section">
+      <h1>환영합니다!</h1>
+      <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
+    </div>
+
+    <!-- 회원가입 화면 -->
+    <div id="registerSection" class="section" style="display: none;">
+      <h2>회원가입</h2>
+      <form id="registerForm">
+        <div class="input-group">
+          <label for="regId">아이디</label>
+          <input type="text" id="regId" placeholder="아이디를 입력하세요" required />
+        </div>
+        <div class="input-group">
+          <label for="regPw">비밀번호</label>
+          <input type="password" id="regPw" placeholder="비밀번호를 입력하세요" required />
+        </div>
+        <button type="submit" class="submit-btn">가입하기</button>
+      </form>
+    </div>
+
+    <!-- 로그인 화면 -->
+    <div id="loginSection" class="section" style="display: none;">
+      <h2>로그인</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="loginId">아이디</label>
+          <input type="text" id="loginId" placeholder="아이디를 입력하세요" required />
+        </div>
+        <div class="input-group">
+          <label for="loginPw">비밀번호</label>
+          <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" required />
+        </div>
+        <button type="submit" class="submit-btn">로그인</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
+  
   <!-- 상단 네비게이션 헤더 -->
   <header class="navbar">
     <div class="logo">📜 역사 동영상 도서관</div>
