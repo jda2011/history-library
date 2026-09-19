@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 상단 헤더 -->
+  <!-- 상단 네비게이션 헤더 -->
   <header class="navbar">
     <div class="logo">📜 역사 동영상 도서관</div>
     <div class="nav-buttons">
@@ -16,31 +16,48 @@
     </div>
   </header>
 
-  <!-- 메인 콘텐츠 -->
-  <main>
-    <!-- 홈 화면 -->
+  <!-- 메인 콘텐츠 영역 -->
+  <main style="padding: 20px; text-align: center;">
+    <!-- 1. 메인 홈 영역 -->
     <div id="homeSection">
       <h1>환영합니다!</h1>
       <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
     </div>
 
-    <!-- 회원가입 화면 -->
-    <div id="registerSection" style="display: none;">
+    <!-- 2. 회원가입 영역 (기본 숨김) -->
+    <div id="registerSection" style="display: none; max-width: 300px; margin: 20px auto; text-align: left;">
       <h2>회원가입</h2>
       <form id="registerForm">
-        <div class="input-group">
-          <label for="regId">아이디</label>
-          <input type="text" id="regId" placeholder="아이디를 입력하세요" required />
+        <div style="margin-bottom: 10px;">
+          <label for="regId">아이디:</label><br>
+          <input type="text" id="regId" required style="width: 100%; padding: 8px;">
         </div>
-        <div class="input-group">
-          <label for="regPw">비밀번호</label>
-          <input type="password" id="regPw" placeholder="비밀번호를 입력하세요" required />
+        <div style="margin-bottom: 10px;">
+          <label for="regPw">비밀번호:</label><br>
+          <input type="password" id="regPw" required style="width: 100%; padding: 8px;">
         </div>
-        <button type="submit" class="submit-btn">가입하기</button>
+        <button type="submit" style="width: 100%; padding: 10px; background-color: #ffa500; color: white; border: none; cursor: pointer;">가입하기</button>
+      </form>
+    </div>
+
+    <!-- 3. 로그인 영역 (기본 숨김) -->
+    <div id="loginSection" style="display: none; max-width: 300px; margin: 20px auto; text-align: left;">
+      <h2>로그인</h2>
+      <form id="loginForm">
+        <div style="margin-bottom: 10px;">
+          <label for="loginId">아이디:</label><br>
+          <input type="text" id="loginId" required style="width: 100%; padding: 8px;">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label for="loginPw">비밀번호:</label><br>
+          <input type="password" id="loginPw" required style="width: 100%; padding: 8px;">
+        </div>
+        <button type="submit" style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">로그인하기</button>
       </form>
     </div>
   </main>
 
+  <!-- 스크립트 연결 -->
   <script src="script.js"></script>
 </body>
 </html>
