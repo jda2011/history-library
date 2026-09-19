@@ -2,12 +2,25 @@
   "version": 2,
   "rewrites": [
     {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
       "source": "/api/(.*)",
       "destination": "/api/index.js"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/$1"
+      "destination": "/index.html"
     }
   ]
 }
