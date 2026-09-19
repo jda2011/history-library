@@ -2,6 +2,7 @@ npm install cors
 
 const express = require('express');
 const cors = require('cors');
+app.use(cors()); // 모든 도메인/포트에서의 요청 허용
 const connectDB = require('./db');
 const initAdmin = require('./initAdmin');
 
