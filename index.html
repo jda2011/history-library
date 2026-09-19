@@ -7,24 +7,38 @@
 </head>
 <body>
 
+  <!-- 상단 헤더 영역 -->
+<header class="navbar">
+  <div class="logo">📜 역사 동영상 도서관</div>
+  <div class="nav-buttons">
+    <button id="navLoginBtn" type="button">로그인</button>
+    <button id="navRegisterBtn" type="button">회원가입</button>
+  </div>
+</header>
+
+<!-- 메인 화면 영역 -->
+<main>
+  <div id="homeSection">
+    <h1>환영합니다!</h1>
+    <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
+  </div>
+
+  <!-- 회원가입 폼 (기본 상태는 숨김) -->
+  <div id="registerSection" style="display: none;">
+    <h2>회원가입</h2>
+    <form id="registerForm">
+      <input type="text" id="regId" placeholder="아이디" required />
+      <input type="password" id="regPassword" placeholder="비밀번호" required />
+      <button type="submit">가입하기</button>
+    </form>
+  </div>
+</main>
+
   <!-- 상단 네비게이션 헤더 -->
   <header class="main-header">
     <div class="logo" onclick="showSection('mainSection')">📜 역사 동영상 도서관</div>
     
-    <!-- 비로그인 시 표시 -->
-    <div id="authNav">
-      <button class="nav-btn" onclick="showSection('loginSection')">로그인</button>
-      <button class="nav-btn highlight" onclick="showSection('registerSection')">회원가입</button>
-    </div>
-
-    <!-- 로그인 시 표시 -->
-    <div id="userNav" style="display:none;">
-      <span id="userInfo"></span>
-      <button id="adminBtn" class="nav-btn admin" style="display:none;" onclick="location.href='admin-video.html'">관리자 페이지</button>
-      <button class="nav-btn" onclick="handleLogout()">로그아웃</button>
-    </div>
-  </header>
-
+   
   <!-- 1. 메인 동영상 목록 화면 -->
   <main id="mainSection" class="content-section">
     <div class="banner">
@@ -111,30 +125,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
-<!-- 상단 헤더 영역 -->
-<header class="navbar">
-  <div class="logo">📜 역사 동영상 도서관</div>
-  <div class="nav-buttons">
-    <button id="navLoginBtn" type="button">로그인</button>
-    <button id="navRegisterBtn" type="button">회원가입</button>
-  </div>
-</header>
-
-<!-- 메인 화면 영역 -->
-<main>
-  <div id="homeSection">
-    <h1>환영합니다!</h1>
-    <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
-  </div>
-
-  <!-- 회원가입 폼 (기본 상태는 숨김) -->
-  <div id="registerSection" style="display: none;">
-    <h2>회원가입</h2>
-    <form id="registerForm">
-      <input type="text" id="regId" placeholder="아이디" required />
-      <input type="password" id="regPassword" placeholder="비밀번호" required />
-      <button type="submit">가입하기</button>
-    </form>
-  </div>
-</main>
