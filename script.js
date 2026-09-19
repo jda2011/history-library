@@ -61,7 +61,10 @@ async function applyBackground() {
   }
 }
 
-// 회원가입 (완료 후 입력창 초기화 및 로그인 화면으로 이동)
+// 상단에 서버 base URL 변수 추가
+const BASE_URL = 'http://localhost:5000'; // 백엔드 포트에 맞춰 수정하세요
+
+// 회원가입 함수(handleRegister) 내부 수정:
 async function handleRegister(e) {
   e.preventDefault();
 
@@ -70,7 +73,9 @@ async function handleRegister(e) {
   const grade = document.getElementById('regGrade').value;
 
   try {
-    const res = await fetch('/api/auth/register', {
+    
+    // 상대 경로 `/api/auth/register` -> `${BASE_URL}/api/auth/register`로 변경
+    const res = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password, grade })
@@ -86,10 +91,10 @@ async function handleRegister(e) {
       alert(data.message || '회원가입 실패');
     }
   } catch (err) {
-    alert('서버 통신 오류');
+    console.error('상세 에러 내용:', err); // 콘솔에 실제 에러 출력
+    alert('서버 통신 오류가 발생했습니다.');
   }
 }
-
 // 로그인 처리
 async function handleLogin(e) {
   e.preventDefault();
@@ -273,3 +278,4 @@ function addQuizInput() {
   `;
   container.appendChild(div);
 }
+
