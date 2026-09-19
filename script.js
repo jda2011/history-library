@@ -1,3 +1,21 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // 배경 및 로그인 상태 체크
+  applyBackground();
+  checkLoginStatus();
+
+  // 회원가입 폼 이벤트 바인딩
+  const regForm = document.getElementById('registerForm');
+  if (regForm) {
+    regForm.addEventListener('submit', handleRegister);
+  }
+
+  // 로그인 폼 이벤트 바인딩
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+});
+
 // script.js 상단
 const BASE_URL = 'http://localhost:5000';
 
