@@ -1,0 +1,17 @@
+git add vercel.json
+git commit -m "fix: vercel.json syntax error"
+git push
+
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ]
+}
