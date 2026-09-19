@@ -112,6 +112,29 @@
 </body>
 </html>
 
-<!-- 예시: 버튼 태그 -->
-<button type="button" id="loginBtn">로그인</button>
-<button type="button" id="registerBtn">회원가입</button>
+<!-- 상단 헤더 영역 -->
+<header class="navbar">
+  <div class="logo">📜 역사 동영상 도서관</div>
+  <div class="nav-buttons">
+    <button id="navLoginBtn" type="button">로그인</button>
+    <button id="navRegisterBtn" type="button">회원가입</button>
+  </div>
+</header>
+
+<!-- 메인 화면 영역 -->
+<main>
+  <div id="homeSection">
+    <h1>환영합니다!</h1>
+    <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
+  </div>
+
+  <!-- 회원가입 폼 (기본 상태는 숨김) -->
+  <div id="registerSection" style="display: none;">
+    <h2>회원가입</h2>
+    <form id="registerForm">
+      <input type="text" id="regId" placeholder="아이디" required />
+      <input type="password" id="regPassword" placeholder="비밀번호" required />
+      <button type="submit">가입하기</button>
+    </form>
+  </div>
+</main>
