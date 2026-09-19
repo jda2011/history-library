@@ -413,3 +413,48 @@ async function handleRegister(e) {
   e.preventDefault();
   // ...회원가입 fetch 로직
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const navLoginBtn = document.getElementById('navLoginBtn');
+  const navRegisterBtn = document.getElementById('navRegisterBtn');
+  const homeSection = document.getElementById('homeSection');
+  const registerSection = document.getElementById('registerSection');
+
+  // 우측 상단 '회원가입' 버튼 클릭 시
+  if (navRegisterBtn) {
+    navRegisterBtn.addEventListener('click', () => {
+      if (homeSection) homeSection.style.display = 'none';
+      if (registerSection) registerSection.style.display = 'block';
+    });
+  }
+
+  // 회원가입 폼 제출 이벤트
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.addEventListener('submit', handleRegister);
+  }
+});
+
+// 회원가입 백엔드 요청 함수
+async function handleRegister(e) {
+  e.preventDefault();
+  const userId = document.getElementById('regId').value;
+  const userPw = document.getElementById('regPassword').value;
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: userId, password: userPw })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('회원가입 성공!');
+    } else {
+      alert(data.message || '회원가입 실패');
+    }
+  } catch (err) {
+    alert('서버 통신 오류');
+  }
+}
