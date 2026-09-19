@@ -393,3 +393,23 @@ const res = await fetch(`${BASE_URL}/api/auth/login`, { ... });
 
 // 4. loadVideos
 const res = await fetch(`${BASE_URL}/api/videos`, { ... });
+
+document.addEventListener('DOMContentLoaded', () => {
+  // 회원가입 버튼/폼 이벤트
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.addEventListener('submit', handleRegister);
+  }
+
+  // 로그인 버튼/폼 이벤트
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+});
+
+// 회원가입 처리 함수 예시
+async function handleRegister(e) {
+  e.preventDefault();
+  // ...회원가입 fetch 로직
+}
