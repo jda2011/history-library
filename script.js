@@ -206,6 +206,27 @@ async function handleRegister(e) {
   }
 }
 
+// script.js 맨 위에 백엔드 서버 주소를 적어줍니다.
+// (예: 백엔드가 Vercel/Render 등에 따로 열려있다면 해당 주소, 로컬 테스트라면 http://localhost:5000)
+const BASE_URL = 'https://your-backend-domain.com'; // 👈 실제 백엔드 서버 주소 입력
+
+// API 요청하는 부분들 수정:
+// 1. applyBackground
+const res = await fetch(`${BASE_URL}/api/config`);
+
+// 2. handleRegister
+const res = await fetch(`${BASE_URL}/api/auth/register`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username, password, grade })
+});
+
+// 3. handleLogin
+const res = await fetch(`${BASE_URL}/api/auth/login`, { ... });
+
+// 4. loadVideos
+const res = await fetch(`${BASE_URL}/api/videos`, { ... });
+
 // 동영상 목록 불러오기
 async function loadVideos() {
   const container = document.getElementById('videoContainer');
