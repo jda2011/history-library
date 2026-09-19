@@ -393,8 +393,3 @@ const res = await fetch(`${BASE_URL}/api/auth/login`, { ... });
 
 // 4. loadVideos
 const res = await fetch(`${BASE_URL}/api/videos`, { ... });
-
-<!-- index.html 파일 최하단 -->
-  <script src="script.js"></script>
-</body>
-</html>
