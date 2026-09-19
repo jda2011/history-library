@@ -38,7 +38,20 @@
   <header class="main-header">
     <div class="logo" onclick="showSection('mainSection')">📜 역사 동영상 도서관</div>
     
-   
+    <!-- 비로그인 시 표시 -->
+    <div id="authNav">
+      <button class="nav-btn" onclick="showSection('loginSection')">로그인</button>
+      <button class="nav-btn highlight" onclick="showSection('registerSection')">회원가입</button>
+    </div>
+
+    <!-- 로그인 시 표시 -->
+    <div id="userNav" style="display:none;">
+      <span id="userInfo"></span>
+      <button id="adminBtn" class="nav-btn admin" style="display:none;" onclick="location.href='admin-video.html'">관리자 페이지</button>
+      <button class="nav-btn" onclick="handleLogout()">로그아웃</button>
+    </div>
+  </header>
+
   <!-- 1. 메인 동영상 목록 화면 -->
   <main id="mainSection" class="content-section">
     <div class="banner">
