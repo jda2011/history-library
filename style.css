@@ -1,0 +1,123 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #fffde7; /* 아이보리 배경색 */
+  color: #333;
+}
+
+/* 핑크색 상단 네비게이션 헤더 */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffe4e8; /* 핑크색 상단바 */
+  padding: 15px 30px;
+  border-bottom: 2px solid #ffb6c1;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #e91e63;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* 우측 상단 로그인 버튼 (하얀색 알약 모양) */
+.btn-login {
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* 우측 상단 회원가입 버튼 (주황색 알약 모양) */
+.btn-register {
+  background-color: #ffb703;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* 메인 콘텐츠 중앙 정렬 */
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px);
+  text-align: center;
+}
+
+.section {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+/* 입력 폼 스타일 */
+.input-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-group input, .input-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ffb6c1;
+  border-radius: 8px;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.pw-wrapper {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-toggle {
+  padding: 0 12px;
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 가입하기 / 로그인하기 하단 버튼 */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #ffb703;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #e0a100;
+}
