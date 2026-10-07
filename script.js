@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 회원가입
+// 회원가입
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -64,11 +64,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Supabase Auth 회원가입
       const { data, error } = await supabaseClient.auth.signUp({
         email: email,
         password: password,
         options: {
-          data: { age_group: ageGroup }
+          data: {
+            age_group: ageGroup
+          }
         }
       });
 
@@ -80,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
+  
   // 로그인
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
