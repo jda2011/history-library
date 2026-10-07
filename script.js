@@ -1,8 +1,10 @@
-// Supabase 클라이언트 초기화 (여기서만 단 한 번 선언합니다)
-const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co/rest/v1/';
+// Supabase 설정
+let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인의 Project URL
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
-// window.supabaseClient로 변수명을 변경하여 기존 선언 충돌을 방지합니다.
+// URL 뒤에 원치 않는 경로가 붙어있을 경우 자동 정리
+SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
+
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,7 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePwBtn = document.getElementById('togglePwBtn');
   const regPwInput = document.getElementById('regPw');
 
-  // 화면 전환 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (registerSection) registerSection.style.display = 'none';
@@ -31,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 상단 네비게이션 버튼 클릭 이벤트
   if (navLoginBtn) {
     navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
   }
@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
   }
 
-  // 비밀번호 보임/숨김 토글
   if (togglePwBtn && regPwInput) {
     togglePwBtn.addEventListener('click', () => {
       if (regPwInput.type === 'password') {
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const ageGroup = document.getElementById('regAge').value;
 
       if (!supabaseClient) {
-        alert('Supabase 연결을 확인해주세요.');
+        alert('Supabase 연결 상태를 확인해 주세요.');
         return;
       }
 
@@ -90,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('loginPw').value;
 
       if (!supabaseClient) {
-        alert('Supabase 연결을 확인해주세요.');
+        alert('Supabase 연결 상태를 확인해 주세요.');
         return;
       }
 
