@@ -88,3 +88,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// 회원가입 요청 핸들러 부분
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPw').value;
+  const ageGroup = document.getElementById('regAge').value;
+
+  // 1. Supabase Auth 가입
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password
+  });
+
+  if (error) {
+    alert('회원가입 실패: ' + error.message);
+    return;
+  }
+
+  // 2. profiles 테이블에 연령대 및 초기 포인트 데이터 삽입
+  if (data.user) {
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([
+        { id: data.user.id, age_group: ageGroup, points: 0 }
+      ]);
+
+    if (profileError) {
+      console.error('프로필 저장 실패:', profileError.message);
+    }
+  }
+
+  alert('회원가입이 완료되었습니다!');
+  window.showSection('loginSection');
+});
