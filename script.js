@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 회원가입 요청
+  // 1. 회원가입 요청
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -66,6 +66,33 @@ document.addEventListener('DOMContentLoaded', () => {
           window.showSection('loginSection');
         } else {
           alert(data.message || '회원가입 실패');
+        }
+      } catch (err) {
+        alert('서버 연결 실패');
+      }
+    });
+  }
+
+  // 2. 로그인 요청 (추가된 부분)
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('loginId').value;
+      const userPw = document.getElementById('loginPw').value;
+
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: userId, password: userPw })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert(`${data.user.username}님 환영합니다!`);
+          window.showSection('homeSection');
+        } else {
+          alert(data.message || '로그인 실패');
         }
       } catch (err) {
         alert('서버 연결 실패');
