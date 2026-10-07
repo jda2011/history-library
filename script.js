@@ -4,6 +4,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 버튼 클릭 및 화면 전환 이벤트...
+});
+
+document.addEventListener('DOMContentLoaded', () => {
   const navLoginBtn = document.getElementById('navLoginBtn');
   const navRegisterBtn = document.getElementById('navRegisterBtn');
   
