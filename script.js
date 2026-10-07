@@ -51,6 +51,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  document.addEventListener('DOMContentLoaded', () => {
+  const navHomeBtn = document.getElementById('navHomeBtn'); // 로고 버튼 추가
+  const navLoginBtn = document.getElementById('navLoginBtn');
+  const navRegisterBtn = document.getElementById('navRegisterBtn');
+  
+  const homeSection = document.getElementById('homeSection');
+  const registerSection = document.getElementById('registerSection');
+  const loginSection = document.getElementById('loginSection');
+
+  // 화면 전환 함수
+  window.showSection = function(sectionId) {
+    if (homeSection) homeSection.style.display = 'none';
+    if (registerSection) registerSection.style.display = 'none';
+    if (loginSection) loginSection.style.display = 'none';
+
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+      targetSection.style.display = 'block';
+    }
+  };
+
+  // 1. 상단 로고 클릭 시 홈 화면으로 이동
+  if (navHomeBtn) {
+    navHomeBtn.addEventListener('click', () => window.showSection('homeSection'));
+  }
+
+  // 2. 로그인/회원가입 버튼 클릭 이벤트
+  if (navLoginBtn) {
+    navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
+  }
+  if (navRegisterBtn) {
+    navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
+  }
+
+  // ... (이하 기존 회원가입 및 로그인 핸들러 코드는 그대로 유지)
+});
+
 // 회원가입
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
