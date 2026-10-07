@@ -4,13 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>역사 동영상 도서관</title>
+  <!-- 파비콘 에러 방지 -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📜</text></svg>">
   <link rel="stylesheet" href="style.css">
   
-  <!-- Supabase SDK 추가 -->
+  <!-- Supabase SDK (이것만 head에 들어갑니다) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <!-- 핑크색 상단 헤더 -->
   <header class="navbar">
     <div class="logo">📜 역사 동영상 도서관</div>
     <div class="nav-buttons">
@@ -19,12 +21,15 @@
     </div>
   </header>
 
+  <!-- 메인 화면 영역 -->
   <main>
+    <!-- 1. 메인 홈 화면 -->
     <div id="homeSection" class="section">
       <h1>환영합니다!</h1>
       <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
     </div>
 
+    <!-- 2. 회원가입 화면 -->
     <div id="registerSection" class="section" style="display: none;">
       <h2>회원가입</h2>
       <form id="registerForm">
@@ -57,6 +62,7 @@
       </form>
     </div>
 
+    <!-- 3. 로그인 화면 -->
     <div id="loginSection" class="section" style="display: none;">
       <h2>로그인</h2>
       <form id="loginForm">
@@ -73,19 +79,7 @@
     </div>
   </main>
 
+  <!-- script.js는 여기서 '단 한 번만' 불러옵니다 -->
   <script src="script.js"></script>
 </body>
 </html>
-
-<!-- index.html 메인 영역 내 추가 -->
-<div id="videoLibrarySection" class="section" style="display: none;">
-  <h2>📜 역사 동영상 목록</h2>
-  <div class="user-info">
-    <span id="userEmailTag"></span>님 | 포인트: <strong id="userPoints">0</strong>pt
-    <button id="logoutBtn" class="btn-toggle">로그아웃</button>
-  </div>
-
-  <div class="video-grid" id="videoContainer">
-    <!-- 자바스크립트로 동영상 목록이 동적 생성됨 -->
-  </div>
-</div>
