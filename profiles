@@ -1,0 +1,17 @@
+-- 사용자 프로필 테이블 생성
+create table public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  age_group text,
+  points integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Row Level Security (RLS) 활성화
+alter table public.profiles enable row level security;
+
+-- 본인 프로필 조회 및 수정 권한 부여
+create policy "사용자는 본인 프로필만 조회 가능" on public.profiles
+  for select using (auth.uid() = id);
+
+create policy "사용자는 본인 프로필만 수정 가능" on public.profiles
+  for update using (auth.uid() = id);
