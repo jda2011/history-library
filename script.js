@@ -2,12 +2,13 @@
 let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인의 Project URL
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
-// URL 뒤에 원치 않는 경로가 붙어있을 경우 자동 정리
+// URL 끝부분 정리
 SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
 
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 document.addEventListener('DOMContentLoaded', () => {
+  const navHomeBtn = document.getElementById('navHomeBtn');
   const navLoginBtn = document.getElementById('navLoginBtn');
   const navRegisterBtn = document.getElementById('navRegisterBtn');
   
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePwBtn = document.getElementById('togglePwBtn');
   const regPwInput = document.getElementById('regPw');
 
+  // 섹션 전환 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (registerSection) registerSection.style.display = 'none';
@@ -32,13 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  if (navLoginBtn) {
-    navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
-  }
-  if (navRegisterBtn) {
-    navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
-  }
+  // 네비게이션 버튼 이벤트
+  if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.showSection('homeSection'));
+  if (navLoginBtn) navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
+  if (navRegisterBtn) navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
 
+  // 비밀번호 표시 토글
   if (togglePwBtn && regPwInput) {
     togglePwBtn.addEventListener('click', () => {
       if (regPwInput.type === 'password') {
@@ -51,85 +52,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-  const navHomeBtn = document.getElementById('navHomeBtn'); // 로고 버튼 추가
-  const navLoginBtn = document.getElementById('navLoginBtn');
-  const navRegisterBtn = document.getElementById('navRegisterBtn');
-  
-  const homeSection = document.getElementById('homeSection');
-  const registerSection = document.getElementById('registerSection');
-  const loginSection = document.getElementById('loginSection');
-
-  // 화면 전환 함수
-  window.showSection = function(sectionId) {
-    if (homeSection) homeSection.style.display = 'none';
-    if (registerSection) registerSection.style.display = 'none';
-    if (loginSection) loginSection.style.display = 'none';
-
-    const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-      targetSection.style.display = 'block';
-    }
-  };
-
-  // 1. 상단 로고 클릭 시 홈 화면으로 이동
-  if (navHomeBtn) {
-    navHomeBtn.addEventListener('click', () => window.showSection('homeSection'));
-  }
-
-  // 2. 로그인/회원가입 버튼 클릭 이벤트
-  if (navLoginBtn) {
-    navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
-  }
-  if (navRegisterBtn) {
-    navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
-  }
-
-  // ... (이하 기존 회원가입 및 로그인 핸들러 코드는 그대로 유지)
-});
-
-// 회원가입
+  // 회원가입 핸들러
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('regEmail').value;
+      const email = document.getElementById('regEmail').value.trim();
       const password = document.getElementById('regPw').value;
       const ageGroup = document.getElementById('regAge').value;
 
-      if (!supabaseClient) {
-        alert('Supabase 연결 상태를 확인해 주세요.');
+      if (password.length < 6) {
+        alert('비밀번호는 최소 6자리 이상이어야 합니다.');
         return;
       }
 
-      // Supabase Auth 회원가입
+      if (!supabaseClient) {
+        alert('Supabase 키 설정을 확인해 주세요.');
+        return;
+      }
+
       const { data, error } = await supabaseClient.auth.signUp({
         email: email,
         password: password,
         options: {
-          data: {
-            age_group: ageGroup
-          }
+          data: { age_group: ageGroup }
         }
       });
 
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
-        alert('회원가입 성공! 로그인해 주세요.');
+        alert('회원가입 성공! 이제 로그인해 주세요.');
         window.showSection('loginSection');
       }
     });
   }
-  
-  // 로그인
+
+  // 로그인 핸들러
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPw').value;
 
       if (!supabaseClient) {
-        alert('Supabase 연결 상태를 확인해 주세요.');
+        alert('Supabase 키 설정을 확인해 주세요.');
         return;
       }
 
@@ -139,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (error) {
-        alert('로그인 실패: ' + error.message);
+        alert('로그인 실패: ' + error.message + '\n(회원가입이 정상적으로 완료되었는지, 비밀번호가 맞는지 확인해 주세요.)');
       } else {
         alert(`${data.user.email}님 환영합니다!`);
         window.showSection('homeSection');
