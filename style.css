@@ -6,16 +6,16 @@
 
 body {
   font-family: 'Noto Sans KR', sans-serif;
-  background-color: #fffde7; /* 아이보리 배경색 */
+  background-color: #fffde7;
   color: #333;
 }
 
-/* 핑크색 상단 네비게이션 헤더 */
+/* 핑크색 상단 헤더 */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffe4e8; /* 핑크색 상단바 */
+  background-color: #ffe4e8;
   padding: 15px 30px;
   border-bottom: 2px solid #ffb6c1;
 }
@@ -31,7 +31,6 @@ body {
   gap: 10px;
 }
 
-/* 우측 상단 로그인 버튼 (하얀색 알약 모양) */
 .btn-login {
   background-color: #ffffff;
   border: 1px solid #ccc;
@@ -42,7 +41,6 @@ body {
   font-size: 0.9rem;
 }
 
-/* 우측 상단 회원가입 버튼 (주황색 알약 모양) */
 .btn-register {
   background-color: #ffb703;
   color: white;
@@ -54,7 +52,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* 메인 콘텐츠 중앙 정렬 */
+/* 메인 레이아웃 및 폼 스타일 */
 main {
   display: flex;
   justify-content: center;
@@ -69,7 +67,6 @@ main {
   padding: 20px;
 }
 
-/* 입력 폼 스타일 */
 .input-group {
   margin-bottom: 15px;
   text-align: left;
@@ -104,7 +101,6 @@ main {
   white-space: nowrap;
 }
 
-/* 가입하기 / 로그인하기 하단 버튼 */
 .submit-btn {
   width: 100%;
   padding: 12px;
