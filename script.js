@@ -123,3 +123,35 @@ registerForm.addEventListener('submit', async (e) => {
   alert('회원가입이 완료되었습니다!');
   window.showSection('loginSection');
 });
+
+// 동영상 목록 데이터 (예시)
+const videos = [
+  { id: 'video1', title: '삼국시대 핵심 요약', youtubeId: 'dQw4w9WgXcQ', points: 10 },
+  { id: 'video2', title: '조선 왕조 500년 역사', youtubeId: 'dQw4w9WgXcQ', points: 15 }
+];
+
+// 로그인 성공 시 동영상 라이브러리 표시 및 사용자 프로필 조회
+async function loadUserProfile(user) {
+  document.getElementById('userEmailTag').textContent = user.email;
+  
+  // DB에서 포인트 가져오기
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('points')
+    .eq('id', user.id)
+    .single();
+
+  if (data) {
+    document.getElementById('userPoints').textContent = data.points;
+  }
+}
+
+// 로그아웃 기능
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    alert('로그아웃 되었습니다.');
+    window.showSection('loginSection');
+  });
+}
