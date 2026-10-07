@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const togglePwBtn = document.getElementById('togglePwBtn');
   const regPwInput = document.getElementById('regPw');
 
-  // 화면 전환 전역 함수 정의
+  // 화면 전환 전역 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (registerSection) registerSection.style.display = 'none';
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 상단 버튼 클릭 이벤트
+  // 상단 네비게이션 버튼 클릭 이벤트
   if (navLoginBtn) {
     navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
   }
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 회원가입 전송
+  // 회원가입 요청
   if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
       e.preventDefault();
