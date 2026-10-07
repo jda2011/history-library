@@ -9,27 +9,24 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+  <!-- 상단 네비게이션 헤더 -->
   <header class="navbar">
-    <div class="logo">📜 역사 동영상 도서관</div>
+    <div class="logo" id="navHomeBtn" style="cursor: pointer;">📜 역사 동영상 도서관</div>
     <div class="nav-buttons">
       <button id="navLoginBtn" type="button" class="btn-login">로그인</button>
       <button id="navRegisterBtn" type="button" class="btn-register">회원가입</button>
     </div>
-  <header class="navbar">
-  <!-- 로고에 id="navHomeBtn" 및 style="cursor: pointer;" 추가 -->
-  <div class="logo" id="navHomeBtn" style="cursor: pointer;">📜 역사 동영상 도서관</div>
-  <div class="nav-buttons">
-    <button id="navLoginBtn" type="button" class="btn-login">로그인</button>
-    <button id="navRegisterBtn" type="button" class="btn-register">회원가입</button>
-  </div>
-</header>
+  </header>
 
-  <main>
+  <!-- 메인 콘텐츠 영역 -->
+  <main class="container">
+    <!-- 1. 홈 화면 -->
     <div id="homeSection" class="section">
       <h1>환영합니다!</h1>
       <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
     </div>
 
+    <!-- 2. 회원가입 화면 -->
     <div id="registerSection" class="section" style="display: none;">
       <h2>회원가입</h2>
       <form id="registerForm">
@@ -39,9 +36,9 @@
         </div>
         
         <div class="input-group">
-          <label for="regPw">비밀번호</label>
+          <label for="regPw">비밀번호 (6자리 이상)</label>
           <div class="pw-wrapper">
-            <input type="password" id="regPw" placeholder="6자리 이상 입력" required />
+            <input type="password" id="regPw" placeholder="6자리 이상 입력" minlength="6" required />
             <button type="button" id="togglePwBtn" class="btn-toggle">보임</button>
           </div>
         </div>
@@ -50,13 +47,13 @@
           <label for="regAge">연령대</label>
           <select id="regAge" required>
             <option value="">선택해 주세요</option>
-            <option value="elem6_under">초6 이하</option>
-            <option value="m1">중1</option>
-            <option value="m2">중2</option>
-            <option value="m3">중3</option>
-            <option value="h1">고1</option>
-            <option value="h2">고2</option>
-            <option value="h3_over">고3 이후</option>
+            <option value="초6 이하">초6 이하</option>
+            <option value="중1">중1</option>
+            <option value="중2">중2</option>
+            <option value="중3">중3</option>
+            <option value="고1">고1</option>
+            <option value="고2">고2</option>
+            <option value="고3 이후">고3 이후</option>
           </select>
         </div>
 
@@ -64,6 +61,7 @@
       </form>
     </div>
 
+    <!-- 3. 로그인 화면 -->
     <div id="loginSection" class="section" style="display: none;">
       <h2>로그인</h2>
       <form id="loginForm">
