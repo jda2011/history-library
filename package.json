@@ -13,3 +13,5 @@
     "mongoose": "^8.3.0"
   }
 }
+
+npm init -y
