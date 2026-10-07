@@ -12,24 +12,68 @@
   <!-- 상단 네비게이션 헤더 -->
   <header class="navbar">
     <div class="logo" id="navHomeBtn" style="cursor: pointer;">📜 역사 동영상 도서관</div>
-    <div class="nav-buttons">
+    
+    <!-- 비로그인 시 표시되는 버튼 -->
+    <div class="nav-buttons" id="guestNav">
       <button id="navLoginBtn" type="button" class="btn-login">로그인</button>
       <button id="navRegisterBtn" type="button" class="btn-register">회원가입</button>
+    </div>
+
+    <!-- 로그인 시 표시되는 버튼 -->
+    <div class="nav-buttons" id="userNav" style="display: none;">
+      <button id="navMyRoomBtn" type="button" class="btn-myroom">👤 <span id="userNicknameDisplay">사용자</span>님의 방</button>
+      <button id="navLogoutBtn" type="button" class="btn-logout">로그아웃</button>
     </div>
   </header>
 
   <!-- 메인 콘텐츠 영역 -->
   <main class="container">
-    <!-- 1. 홈 화면 -->
+    <!-- 1. 홈 화면 (동영상 목록) -->
     <div id="homeSection" class="section">
-      <h1>환영합니다!</h1>
-      <p>역사 동영상을 시청하고 퀴즈를 풀어 포인트를 획득해 보세요.</p>
+      <h1>🎬 역사 동영상 시청하기</h1>
+      <p id="welcomeMsg">로그인 후 다양한 역사 동영상을 시청해보세요!</p>
+      
+      <!-- 영상 목록 플레이스홀더 -->
+      <div class="video-grid" id="videoList">
+        <div class="video-card">
+          <div class="video-thumbnail">📺</div>
+          <h3>[조선] 세종대왕과 한글 창제</h3>
+          <p>훈민정음 창제 과정과 역사적 의의를 알아봅니다.</p>
+        </div>
+        <div class="video-card">
+          <div class="video-thumbnail">📜</div>
+          <h3>[삼국] 광개토대왕의 영토 확장</h3>
+          <p>고구려 전성기를 이끈 광개토대왕의 정벌기.</p>
+        </div>
+        <div class="video-card">
+          <div class="video-thumbnail">🏺</div>
+          <h3>[고려] 대몽항쟁과 팔만대장경</h3>
+          <p>몽골의 침입에 맞선 고려 백성들의 기록.</p>
+        </div>
+      </div>
     </div>
 
-    <!-- 2. 회원가입 화면 -->
+    <!-- 2. 개인 방 (마이페이지) -->
+    <div id="myRoomSection" class="section" style="display: none;">
+      <h2>👤 <span id="myRoomUsername"></span>님의 개인 방</h2>
+      <div class="my-info-card">
+        <p><strong>이메일:</strong> <span id="myEmail"></span></p>
+        <p><strong>아이디(닉네임):</strong> <span id="myNickname"></span></p>
+        <p><strong>시청한 영상:</strong> 0개</p>
+        <p><strong>획득한 포인트:</strong> 0 PT</p>
+      </div>
+    </div>
+
+    <!-- 3. 회원가입 화면 -->
     <div id="registerSection" class="section" style="display: none;">
       <h2>회원가입</h2>
       <form id="registerForm">
+        <!-- 아이디(닉네임) 입력 -->
+        <div class="input-group">
+          <label for="regUsername">아이디 (닉네임)</label>
+          <input type="text" id="regUsername" placeholder="사용할 아이디 입력" required />
+        </div>
+
         <div class="input-group">
           <label for="regEmail">이메일</label>
           <input type="email" id="regEmail" placeholder="example@email.com" required />
@@ -61,7 +105,7 @@
       </form>
     </div>
 
-    <!-- 3. 로그인 화면 -->
+    <!-- 4. 로그인 화면 -->
     <div id="loginSection" class="section" style="display: none;">
       <h2>로그인</h2>
       <form id="loginForm">
