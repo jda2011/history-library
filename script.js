@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navRegisterBtn) navRegisterBtn.onclick = () => window.showSection('registerSection');
   if (navMyRoomBtn) navMyRoomBtn.onclick = () => window.showSection('myRoomSection');
 
-  // 로그아웃
+  // 로그아웃 (async 추가)
   if (navLogoutBtn) {
     navLogoutBtn.onclick = async () => {
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 5. 👁️ 비밀번호 보임/숨김 토글 기능 복원
+  // 5. 👁️ 비밀번호 보임/숨김 토글
   if (togglePwBtn && regPwInput) {
     togglePwBtn.onclick = () => {
       regPwInput.type = regPwInput.type === 'password' ? 'text' : 'password';
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  // 7. 시대별 탭 필터링 이벤트 복원
+  // 7. 시대별 탭 필터링 이벤트
   const eraButtons = document.querySelectorAll('.era-btn');
   eraButtons.forEach(btn => {
     btn.onclick = (e) => {
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-  // 8. 모달 닫기 복원
+  // 8. 모달 닫기
   if (closeModalBtn) {
     closeModalBtn.onclick = () => {
       if (videoModal) videoModal.style.display = 'none';
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.renderVideos('all');
 
-  // 9. 회원가입 처리
+  // 9. 회원가입 처리 (async 적용)
   if (registerForm) {
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -218,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
+        // 아이디-이메일 매핑 로컬에 저장
         const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
         userMap[username] = email;
         localStorage.setItem('user_map', JSON.stringify(userMap));
@@ -228,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 10. 로그인 처리
+  // 10. 로그인 처리 (async 적용 및 아이디 로그인 자동 변환 지원)
   if (loginForm) {
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -237,11 +238,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('loginPw').value;
 
       if (typeof supabaseClient === 'undefined' || !supabaseClient) {
-        alert('Supabase 연결 실패');
+        alert('Supabase 연결 오류');
         return;
       }
 
-      // 저장된 이메일 찾기
+      // 아이디 입력 시 저장된 매핑 이메일 조회 (없으면 입력값 그대로 사용)
       const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
       let targetEmail = userMap[inputVal] || inputVal;
 
@@ -251,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (error) {
-        alert('로그인 실패: 아이디(이메일) 또는 비밀번호가 올바르지 않습니다.');
+        alert('로그인 실패: 아이디(이메일) 또는 비밀번호를 확인해 주세요.');
       } else {
         updateAuthState(data.user);
         const displayName = data.user.user_metadata?.username || inputVal;
@@ -260,23 +261,4 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
-});
-
-// 로그인 처리 로직
-const inputVal = document.getElementById('loginUsername').value.trim();
-const password = document.getElementById('loginPw').value;
-
-// 1. LocalStorage에서 저장된 아이디-이메일 매핑 정보 확인
-const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
-let targetEmail = userMap[inputVal];
-
-// 2. 만약 이메일 형태(@ 포함)를 직접 입력했거나, 매핑 데이터가 없다면 입력값 그대로 사용
-if (!targetEmail) {
-  targetEmail = inputVal.includes('@') ? inputVal : `${inputVal}@library.com`;
-}
-
-// 3. Supabase 로그인 실행
-const { data, error } = await supabaseClient.auth.signInWithPassword({
-  email: targetEmail,
-  password: password
 });
