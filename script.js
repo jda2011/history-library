@@ -2,7 +2,7 @@
 let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
-SUPABASE_URL = SUPABASE_URL.replace(/\/+$|\/auth\/v1.*$/g, '');
+SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
 
 let supabaseClient = null;
 try {
@@ -12,6 +12,7 @@ try {
 } catch (e) {
   console.warn("Supabase 클라이언트 초기화 실패:", e);
 }
+
 // 시대별 영상 데이터
 const videoData = [
   { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선 성립', desc: '한반도 최초의 국가 고조선의 건국과 8조법을 살펴봅니다.', youtubeId: 'dQw4w9WgXcQ' },
@@ -27,7 +28,6 @@ const videoData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 요소를 안전하게 가져오기
   const navHomeBtn = document.getElementById('navHomeBtn');
   const navLoginBtn = document.getElementById('navLoginBtn');
   const navRegisterBtn = document.getElementById('navRegisterBtn');
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentUser = null;
 
-  // 1. 화면 전환 함수
+  // 화면 전환 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (myRoomSection) myRoomSection.style.display = 'none';
@@ -68,12 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginSection) loginSection.style.display = 'none';
 
     const targetSection = document.getElementById(sectionId);
-    if (targetSection) {
-      targetSection.style.display = 'block';
-    }
+    if (targetSection) targetSection.style.display = 'block';
   };
 
-  // 2. 로그인 상태 업데이트 UI
+  // UI 로그인 상태 반영
   function updateAuthState(user) {
     currentUser = user;
     if (user) {
@@ -101,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 초기 로그인 세션 확인
+  // 로그인 상태 세션 확인
   if (supabaseClient) {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       updateAuthState(session ? session.user : null);
@@ -110,13 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAuthState(null);
   }
 
-  // 3. 네비게이션 버튼 바인딩
+  // 상단 네비게이션 버튼들
   if (navHomeBtn) navHomeBtn.onclick = () => window.showSection('homeSection');
   if (navLoginBtn) navLoginBtn.onclick = () => window.showSection('loginSection');
   if (navRegisterBtn) navRegisterBtn.onclick = () => window.showSection('registerSection');
   if (navMyRoomBtn) navMyRoomBtn.onclick = () => window.showSection('myRoomSection');
 
-  // 로그아웃
+  // 로그아웃 처리
   if (navLogoutBtn) {
     navLogoutBtn.onclick = async () => {
       if (supabaseClient) {
@@ -128,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 4. 비밀번호 표시 토글
+  // 비밀번호 보임/숨김 토글
   if (togglePwBtn && regPwInput) {
     togglePwBtn.onclick = () => {
       regPwInput.type = regPwInput.type === 'password' ? 'text' : 'password';
@@ -143,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 5. 영상 목록 렌더링 및 모달 클릭
+  // 영상 목록 출력
   function renderVideos(eraFilter = 'all') {
     if (!videoList) return;
     videoList.innerHTML = '';
@@ -182,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 시대별 부록 탭 이벤트
+  // 시대별 부록 탭
   const eraButtons = document.querySelectorAll('.era-btn');
   eraButtons.forEach(btn => {
     btn.onclick = (e) => {
@@ -194,24 +192,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderVideos('all');
 
-  // 6. 아이디 중복 체크
-  async function checkUsernameDuplicate(username) {
+  // 아이디 중복 확인
+  function checkUsernameDuplicate(username) {
     const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
-    if (userMap[username]) return true;
-
-    if (supabaseClient) {
-      try {
-        const { data } = await supabaseClient
-          .from('profiles')
-          .select('username')
-          .eq('username', username);
-        if (data && data.length > 0) return true;
-      } catch (err) {}
-    }
-    return false;
+    return !!userMap[username];
   }
 
-  // 7. 회원가입 제출
+  // 회원가입
   if (registerForm) {
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -231,15 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // 아이디 중복 확인
-      const isDuplicate = await checkUsernameDuplicate(username);
-      if (isDuplicate) {
+      // 아이디 중복 체크
+      if (checkUsernameDuplicate(username)) {
         alert('누군가 사용중입니다');
         return;
       }
 
       if (!supabaseClient) {
-        alert('Supabase 키가 설정되지 않았습니다. script.js 최상단 키값을 등록해 주세요.');
+        alert('Supabase 초기화 실패');
         return;
       }
 
@@ -254,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
+        // 아이디 - 이메일 정보 저장
         const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
         userMap[username] = email;
         localStorage.setItem('user_map', JSON.stringify(userMap));
@@ -264,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 8. 로그인 제출
+  // 로그인
   if (loginForm) {
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -273,12 +260,18 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('loginPw').value;
 
       if (!supabaseClient) {
-        alert('Supabase 키가 설정되지 않았습니다. script.js 최상단 키값을 등록해 주세요.');
+        alert('Supabase 초기화 실패');
         return;
       }
 
+      // 입력값이 이메일 형식이 아닌 아이디인 경우, 등록된 이메일 가져오기
       const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
       let targetEmail = userMap[inputVal] || inputVal;
+
+      // 만약 저장된 이메일이 없는 아이디일 경우 가상 이메일 형식을 할당해서 시도
+      if (!targetEmail.includes('@')) {
+        targetEmail = `${inputVal}@library.com`;
+      }
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: targetEmail,
