@@ -168,3 +168,43 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+      <!-- 로그인 섹션 -->
+<section id="loginSection" class="auth-section" style="display: none;">
+  <div class="auth-card">
+    <h2>로그인</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="loginUsername">이메일</label>
+        <input type="email" id="loginUsername" placeholder="example@email.com" required>
+      </div>
+      <div class="input-group">
+        <label for="loginPw">비밀번호</label>
+        <input type="password" id="loginPw" placeholder="비밀번호 입력" required>
+      </div>
+      <button type="submit" class="primary-btn full-btn">로그인</button>
+    </form>
+  </div>
+</section>
+
+<!-- 회원가입 섹션 -->
+<section id="registerSection" class="auth-section" style="display: none;">
+  <div class="auth-card">
+    <h2>회원가입</h2>
+    <form id="registerForm">
+      <div class="input-group">
+        <label for="regEmail">이메일</label>
+        <input type="email" id="regEmail" placeholder="example@email.com" required>
+      </div>
+      <div class="input-group">
+        <label for="regPw">비밀번호</label>
+        <input type="password" id="regPw" placeholder="비밀번호 입력" required>
+      </div>
+      <div class="input-group">
+        <label for="regUsername">닉네임</label>
+        <input type="text" id="regUsername" placeholder="닉네임 입력" required>
+      </div>
+      <button type="submit" class="primary-btn full-btn">회원가입하기</button>
+    </form>
+  </div>
+</section>
