@@ -7,237 +7,116 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
-  <!-- Supabase 라이브러리 및 설정 -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase.js"></script>
 
-  <!-- 메인 자바스크립트 파일 (반드시 가장 아래에 위치) -->
+  <!-- 메인 헤더 (중복 없이 1개만 배치) -->
+  <header class="main-header">
+    <div class="header-container">
+      <h1 class="logo" onclick="showView('homeView')">📜 역사 동영상 도서관</h1>
+      <nav>
+        <!-- 로그인 전 -->
+        <div class="auth-logged-out">
+          <button type="button" class="nav-btn btn-blue" onclick="openModal('loginModal')">로그인</button>
+          <button type="button" class="nav-btn btn-green" onclick="openModal('signupModal')">회원가입</button>
+        </div>
+        <!-- 로그인 후 -->
+        <div class="auth-logged-in" style="display: none;">
+          <button type="button" class="nav-btn" id="userNavBtnText" onclick="showView('myRoomView')">내 방</button>
+          <button type="button" class="nav-btn" onclick="showView('adminView')">관리자 방</button>
+          <button type="button" class="nav-btn btn-logout">로그아웃</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 메인 화면들 -->
+  <main class="content-area">
+    <!-- 1. 홈 화면 -->
+    <section id="homeView" class="view-section">
+      <h2 class="section-title">📚 역사 동영상 목록</h2>
+      <div id="videoList" class="video-grid"></div>
+    </section>
+
+    <!-- 2. 내 방 (마이페이지) -->
+    <section id="myRoomView" class="view-section" style="display: none;">
+      <h2>🏠 <span id="myRoomNickname">사용자</span>님의 방</h2>
+      <p>이메일: <span id="myRoomEmail">-</span></p>
+    </section>
+
+    <!-- 3. 관리자 센터 -->
+    <section id="adminView" class="view-section" style="display: none;">
+      <h2>🛠️ 관리자 센터</h2>
+      <!-- 영상 등록 폼 -->
+      <form id="addVideoForm" class="admin-form">
+        <h3>영상 등록</h3>
+        <input type="text" id="videoCategory" placeholder="카테고리 (예: 조선시대)" required>
+        <input type="text" id="videoTitle" placeholder="영상 제목" required>
+        <input type="url" id="videoUrl" placeholder="YouTube Embed URL" required>
+        <textarea id="videoDesc" placeholder="영상 설명"></textarea>
+        <button type="submit" class="btn-submit btn-blue">영상 게시하기</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- 로그인 모달 -->
+  <div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
+      <h2 class="modal-title">로그인</h2>
+      <form id="loginForm">
+        <div class="input-group">
+          <label for="loginEmail">이메일</label>
+          <input type="email" id="loginEmail" placeholder="example@email.com" required>
+        </div>
+
+        <div class="input-group">
+          <label for="loginPassword">비밀번호</label>
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="비밀번호 입력" required>
+            <button type="button" class="toggle-password-btn" onclick="togglePassword('loginPassword', this)">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit btn-blue">로그인하기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 회원가입 모달 -->
+  <div id="signupModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
+      <h2 class="modal-title">회원가입</h2>
+      <form id="signupForm">
+        <div class="input-group">
+          <label for="signupEmail">이메일 주소</label>
+          <input type="email" id="signupEmail" placeholder="example@email.com" required>
+        </div>
+
+        <div class="input-group">
+          <label for="signupPassword">비밀번호</label>
+          <div class="password-wrapper">
+            <input type="password" id="signupPassword" placeholder="비밀번호 입력" required>
+            <button type="button" class="toggle-password-btn" onclick="togglePassword('signupPassword', this)">👁️</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="signupNickname">닉네임</label>
+          <input type="text" id="signupNickname" placeholder="닉네임 입력" required>
+        </div>
+
+        <div class="input-group">
+          <label for="signupAge">연령 (나이)</label>
+          <input type="number" id="signupAge" placeholder="예: 15" min="1" max="120">
+        </div>
+
+        <button type="submit" class="btn-submit btn-green">회원가입하기</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Supabase CDN (별도 supabase.js 없어도 작동하도록 직접 CDN 연결) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
-<!-- 헤더 / 네비게이션 예시 -->
-<header>
-  <h1 class="logo">역사 동영상 도서관</h1>
-  
-  <nav>
-    <!-- 로그인 전 -->
-    <div class="auth-logged-out">
-      <button type="button" id="loginBtn" class="btn-login">로그인</button>
-      <button type="button" id="signupBtn" class="btn-signup">회원가입</button>
-    </div>
-
-    <!-- 로그인 후 -->
-    <div class="auth-logged-in" style="display: none;">
-      <button type="button" id="userNavBtnText">내 방</button>
-      <button type="button">로그아웃</button>
-    </div>
-  </nav>
-</header>
-
-  <!-- 상단 네비게이션 바 -->
-  <header class="navbar">
-    <div class="logo" id="navHomeBtn" style="cursor: pointer;">
-      📜 역사 동영상 도서관
-    </div>
-    
-    <!-- 비로그인 시 상단 메뉴 -->
-    <nav id="guestNav" class="nav-links">
-      <button id="navLoginBtn" class="btn btn-blue">로그인</button>
-      <button id="navRegisterBtn" class="btn btn-green">회원가입</button>
-    </nav>
-
-    <!-- 로그인 시 상단 메뉴 -->
-    <nav id="userNav" class="nav-links" style="display: none;">
-      <span class="user-welcome"><b id="userNicknameDisplay">사용자</b>님 환영합니다!</span>
-      <button id="navMyRoomBtn" class="btn btn-gray">내 방</button>
-      <button id="navAdminBtn" class="btn btn-orange" style="display: none;">🛠️ 관리자 방</button>
-      <button id="navLogoutBtn" class="btn btn-red">로그아웃</button>
-    </nav>
-  </header>
-
- <main class="main-container">
-
-  <!-- 1. 메인 홈 (영상 목록) -->
-  <section id="homeView" class="view-section">
-    <h2 class="section-title">📚 역사 동영상 목록</h2>
-    <div id="videoList" class="video-grid">
-      <!-- 영상 카드가 동적으로 추가됩니다 -->
-    </div>
-  </section>
-
-  <!-- 2. 개인 방 (My Room) -->
-  <section id="myRoomView" class="view-section" style="display: none;">
-    <div class="my-room-card">
-      <!-- 하늘색 사용자 프로필 헤더 -->
-      <div class="user-profile-header">
-        <div class="avatar-icon">👤</div>
-        <div class="user-info">
-          <h3 id="myRoomNickname" class="user-nickname">jj</h3>
-          <p id="myRoomEmail" class="user-email">8yskvkwj@gmail.com</p>
-        </div>
-      </div>
-
-      <!-- 나의 학습 현황 -->
-      <div class="dashboard-section">
-        <h4 class="dashboard-title">📊 나의 학습 현황</h4>
-        <div class="stats-grid">
-          <div class="stat-box">
-            <span class="stat-label">시청한 강좌</span>
-            <span class="stat-value" id="statVideos">0개</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">풀었던 퀴즈</span>
-            <span class="stat-value" id="statQuizzes">0개</span>
-          </div>
-          <div class="stat-box">
-            <span class="stat-label">획득한 포인트</span>
-            <span class="stat-value" id="statPoints">0 PT</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. 관리자 방 (Admin View) -->
-  <section id="adminView" class="view-section" style="display: none;">
-    <div class="admin-card">
-      <h2 class="admin-main-title">🛠️ 관리자 센터 (영상 게시 및 문제 관리)</h2>
-
-      <!-- 제작 영상 게시 폼 -->
-      <div class="admin-form-group">
-        <h3>🎬 제작 영상 게시</h3>
-        <form id="addVideoForm">
-          <div class="form-item">
-            <label>시대 구분</label>
-            <select id="videoCategory">
-              <option value="고대">고대</option>
-              <option value="고려">고려</option>
-              <option value="조선">조선</option>
-              <option value="근현대">근현대</option>
-            </select>
-          </div>
-
-          <div class="form-item">
-            <label>영상 제목</label>
-            <input type="text" id="videoTitle" placeholder="예: [고대] 고구려의 발선" required>
-          </div>
-
-          <div class="form-item">
-            <label>제작 영상 파일 URL (MP4 등)</label>
-            <input type="url" id="videoUrl" placeholder="예: https://example.com/video.mp4 또는 유튜브 링크" required>
-          </div>
-
-          <div class="form-item">
-            <label>영상 설명</label>
-            <textarea id="videoDesc" rows="3"></textarea>
-          </div>
-
-          <button type="submit" class="btn-submit btn-blue">영상 게시</button>
-        </form>
-      </div>
-
-      <hr class="divider">
-
-      <!-- 문제(퀴즈) 게시 폼 -->
-      <div class="admin-form-group">
-        <h3>❓ 문제(퀴즈) 게시</h3>
-        <form id="addQuizForm">
-          <div class="form-item">
-            <label>연결할 영상</label>
-            <select id="quizVideoSelect">
-              <option value="">영상을 선택하세요</option>
-            </select>
-          </div>
-
-          <div class="form-item">
-            <label>퀴즈 질문</label>
-            <input type="text" id="quizQuestion" required>
-          </div>
-
-          <div class="form-item"><label>보기 1</label><input type="text" id="quizOpt1" required></div>
-          <div class="form-item"><label>보기 2</label><input type="text" id="quizOpt2" required></div>
-          <div class="form-item"><label>보기 3</label><input type="text" id="quizOpt3"></div>
-          <div class="form-item"><label>보기 4</label><input type="text" id="quizOpt4"></div>
-
-          <div class="form-item">
-            <label>정답 번호</label>
-            <select id="quizAnswer">
-              <option value="1">1번</option>
-              <option value="2">2번</option>
-              <option value="3">3번</option>
-              <option value="4">4번</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn-submit btn-purple">문제 게시</button>
-        </form>
-      </div>
-
-      <hr class="divider">
-
-      <!-- 등록된 콘텐츠 관리 -->
-      <div class="admin-form-group">
-        <h3>📂 등록된 콘텐츠 및 삭제 관리</h3>
-        <p class="sub-text">게시된 직접 제작 영상 목록</p>
-        <div id="adminVideoList" class="managed-list"></div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-  <head>
-  <meta charset="UTF-8">
-  <title>역사 동영상 도서관</title>
-  <!-- 파비콘 오류 방지용 가짜 링크 -->
-  <link rel="shortcut icon" href="#">
-</head>
-
-<!-- 로그인 모달 -->
-<div id="loginModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
-    <h2 class="modal-title">로그인</h2>
-    <form id="loginForm">
-      <div class="input-group">
-        <label for="loginEmail">이메일</label>
-        <input type="email" id="loginEmail" placeholder="example@email.com" required>
-      </div>
-
-      <div class="input-group">
-        <label for="loginPassword">비밀번호</label>
-        <input type="password" id="loginPassword" placeholder="비밀번호 입력" required>
-      </div>
-
-      <button type="submit" class="btn-submit btn-login-submit">로그인하기</button>
-    </form>
-  </div>
-</div>
-
-<!-- 회원가입 모달 -->
-<div id="signupModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
-    <h2 class="modal-title">회원가입</h2>
-    <form id="signupForm">
-      <div class="input-group">
-        <label for="signupEmail">이메일 주소</label>
-        <input type="email" id="signupEmail" placeholder="example@email.com" required>
-      </div>
-
-      <div class="input-group">
-        <label for="signupPassword">비밀번호</label>
-        <input type="password" id="signupPassword" placeholder="비밀번호 입력" required>
-      </div>
-
-      <div class="input-group">
-        <label for="signupNickname">닉네임</label>
-        <input type="text" id="signupNickname" placeholder="닉네임 입력" required>
-      </div>
-
-      <button type="submit" class="btn-submit btn-signup-submit">회원가입하기</button>
-    </form>
-  </div>
-</div>
