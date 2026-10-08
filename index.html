@@ -147,3 +147,83 @@
   <button id="navAdminBtn" style="display: none; background-color: #ff9800;">관리자 페이지</button>
   <button id="navLogoutBtn">로그아웃</button>
 </div>
+
+// 관리자 부분
+<div id="userNav" style="display: none;">
+  <span id="userNicknameDisplay"></span>
+  <!-- 관리자 배지 -->
+  <span id="adminBadge" style="display: none; background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold;">관리자</span>
+  
+  <button id="navMyRoomBtn">내정보</button>
+  <!-- 관리자 페이지 이동 버튼 -->
+  <button id="navAdminBtn" style="display: none; background-color: #f39c12; color: white;">⚙️ 관리자 센터</button>
+  <button id="navLogoutBtn">로그아웃</button>
+</div>
+
+<!-- ⚙️ 관리자 전용 섹션 -->
+<section id="adminSection" style="display: none; max-width: 800px; margin: 20px auto; padding: 20px; border: 2px solid #f39c12; border-radius: 8px; background-color: #fff9f0;">
+  <h2>⚙️ 관리자 전용 센터</h2>
+  <p>영상의 추가/삭제 및 퀴즈(문제)의 관리를 진행할 수 있습니다.</p>
+
+  <!-- 1. 영상 관리 -->
+  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h3>📺 영상 업로드 (등록)</h3>
+    <form id="adminAddVideoForm">
+      <div style="margin-bottom: 10px;">
+        <label>시대 구분:</label>
+        <select id="adminVideoEra" required style="width: 100%; padding: 8px;">
+          <option value="ancient">고대</option>
+          <option value="medieval">중세</option>
+          <option value="early-modern">근세</option>
+          <option value="modern">근대</option>
+          <option value="contemporary">현대</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>영상 제목:</label>
+        <input type="text" id="adminVideoTitle" placeholder="예: [고대] 삼국시대 태동" required style="width: 100%; padding: 8px;" />
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>YouTube ID (URL의 v= 뒷부분):</label>
+        <input type="text" id="adminVideoYoutubeId" placeholder="예: dQw4w9WgXcQ" required style="width: 100%; padding: 8px;" />
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>영상 설명:</label>
+        <textarea id="adminVideoDesc" placeholder="영상 요약 설명 입력" required style="width: 100%; padding: 8px; height: 60px;"></textarea>
+      </div>
+      <button type="submit" style="background: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">+ 영상 추가하기</button>
+    </form>
+  </div>
+
+  <!-- 2. 퀴즈(문제) 관리 -->
+  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h3>❓ 퀴즈(문제) 업로드</h3>
+    <form id="adminAddQuizForm">
+      <div style="margin-bottom: 10px;">
+        <label>연관 영상 선택:</label>
+        <select id="adminQuizVideoSelect" required style="width: 100%; padding: 8px;"></select>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>질문 내용:</label>
+        <input type="text" id="adminQuizQuestion" placeholder="예: 고조선을 건국한 인물은?" required style="width: 100%; padding: 8px;" />
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>보기 1:</label><input type="text" id="adminQuizOpt1" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
+        <label>보기 2:</label><input type="text" id="adminQuizOpt2" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
+        <label>보기 3:</label><input type="text" id="adminQuizOpt3" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
+        <label>보기 4:</label><input type="text" id="adminQuizOpt4" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label>정답 번호 (1~4):</label>
+        <input type="number" id="adminQuizAnswer" min="1" max="4" required style="width: 100%; padding: 8px;" />
+      </div>
+      <button type="submit" style="background: #2980b9; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">+ 퀴즈 등록하기</button>
+    </form>
+  </div>
+
+  <!-- 3. 현재 등록된 영상 및 퀴즈 목록 (삭제용) -->
+  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <h3>🗑️ 등록된 콘텐츠 관리 (삭제)</h3>
+    <div id="adminManageList"></div>
+  </div>
+</section>
