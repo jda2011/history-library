@@ -162,6 +162,55 @@
 
 <!-- ⚙️ 관리자 전용 섹션 -->
 <section id="adminSection" style="display: none; max-width: 800px; margin: 20px auto; padding: 20px; border: 2px solid #f39c12; border-radius: 8px; background-color: #fff9f0;">
+
+  <!-- 관리자 화면 영역 -->
+<section id="adminSection" style="display:none; padding: 20px;">
+  <h2>🛠️ 관리자 방</h2>
+  <hr style="margin-bottom: 20px;">
+
+  <!-- 1. 영상 등록 폼 -->
+  <div style="background: #f4f6f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>📺 새로운 영상 게시</h3>
+    <form id="adminAddVideoForm" style="display:flex; flex-direction:column; gap:10px; max-width:500px;">
+      <select id="adminVideoEra" required>
+        <option value="ancient">고대</option>
+        <option value="medieval">중세</option>
+        <option value="modern">근대</option>
+        <option value="contemporary">현대</option>
+      </select>
+      <input type="text" id="adminVideoTitle" placeholder="영상 제목" required>
+      <input type="text" id="adminVideoYoutubeId" placeholder="YouTube ID (예: dQw4w9WgXcQ)" required>
+      <textarea id="adminVideoDesc" placeholder="영상 설명" required></textarea>
+      <button type="submit" style="padding:10px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;">영상 등록</button>
+    </form>
+  </div>
+
+  <!-- 2. 퀴즈 등록 폼 -->
+  <div style="background: #f4f6f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h3>❓ 새로운 퀴즈 게시</h3>
+    <form id="adminAddQuizForm" style="display:flex; flex-direction:column; gap:10px; max-width:500px;">
+      <select id="adminQuizVideoSelect" required>
+        <option value="">영상을 선택하세요</option>
+      </select>
+      <input type="text" id="adminQuizQuestion" placeholder="퀴즈 질문" required>
+      <input type="text" id="adminQuizOpt1" placeholder="보기 1" required>
+      <input type="text" id="adminQuizOpt2" placeholder="보기 2" required>
+      <input type="text" id="adminQuizOpt3" placeholder="보기 3" required>
+      <input type="text" id="adminQuizOpt4" placeholder="보기 4" required>
+      <select id="adminQuizAnswer" required>
+        <option value="1">정답: 1번</option>
+        <option value="2">정답: 2번</option>
+        <option value="3">정답: 3번</option>
+        <option value="4">정답: 4번</option>
+      </select>
+      <button type="submit" style="padding:10px; background:#2ecc71; color:white; border:none; border-radius:4px; cursor:pointer;">퀴즈 등록</button>
+    </form>
+  </div>
+
+  <!-- 3. 등록된 목록 및 삭제 관리 -->
+  <div id="adminManageList" style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;"></div>
+</section>
+  
   <h2>⚙️ 관리자 전용 센터</h2>
   <p>영상의 추가/삭제 및 퀴즈(문제)의 관리를 진행할 수 있습니다.</p>
 
