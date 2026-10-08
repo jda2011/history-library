@@ -28,19 +28,19 @@
 
   <!-- 메인 콘텐츠 영역 -->
   <main class="container">
-    <!-- 1. 홈 화면 -->
+    <!-- 1. 홈 화면 (시대별 부록 및 동영상 목록) -->
     <div id="homeSection" class="section">
       <h1>🎬 역사 동영상 시청하기</h1>
       <p id="welcomeMsg">로그인 후 다양한 역사 동영상을 시청해보세요!</p>
 
       <!-- 시대별 부록 카테고리 탭 -->
       <div class="era-tabs">
-        <button class="era-btn active" data-era="all">전체</button>
-        <button class="era-btn" data-era="ancient">🏛️ 고대</button>
-        <button class="era-btn" data-era="medieval">⚔️ 중세</button>
-        <button class="era-btn" data-era="early-modern">📜 근세</button>
-        <button class="era-btn" data-era="modern">🚂 근대</button>
-        <button class="era-btn" data-era="contemporary">🏙️ 현대</button>
+        <button type="button" class="era-btn active" data-era="all">전체</button>
+        <button type="button" class="era-btn" data-era="ancient">🏛️ 고대</button>
+        <button type="button" class="era-btn" data-era="medieval">⚔️ 중세</button>
+        <button type="button" class="era-btn" data-era="early-modern">📜 근세</button>
+        <button type="button" class="era-btn" data-era="modern">🚂 근대</button>
+        <button type="button" class="era-btn" data-era="contemporary">🏙️ 현대</button>
       </div>
       
       <!-- 영상 목록 -->
@@ -49,10 +49,10 @@
 
     <!-- 2. 개인 방 (마이페이지) -->
     <div id="myRoomSection" class="section" style="display: none;">
-      <h2>👤 <span id="myRoomUsername"></span>님의 개인 방</h2>
+      <h2>👤 <span id="myRoomUsername">사용자</span>님의 개인 방</h2>
       <div class="my-info-card">
-        <p><strong>아이디:</strong> <span id="myNickname"></span></p>
-        <p><strong>이메일:</strong> <span id="myEmail"></span></p>
+        <p><strong>아이디:</strong> <span id="myNickname">-</span></p>
+        <p><strong>이메일:</strong> <span id="myEmail">-</span></p>
         <p><strong>시청 기록:</strong> <span id="watchCount">0</span>개 시청함</p>
         <p><strong>획득한 포인트:</strong> 0 PT</p>
       </div>
@@ -107,7 +107,6 @@
           <input type="text" id="loginUsername" placeholder="아이디 또는 이메일 입력" required />
         </div>
         
-        <!-- 로그인 비밀번호 입력 및 보임/숨김 버튼 -->
         <div class="input-group">
           <label for="loginPw">비밀번호</label>
           <div class="pw-wrapper">
@@ -121,7 +120,7 @@
     </div>
   </main>
 
-  <!-- 동영상 시청 모달 -->
+  <!-- 동영상 시청 모달 (팝업창) -->
   <div id="videoModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close-btn" id="closeModalBtn">&times;</span>
@@ -129,4 +128,10 @@
       <div class="video-container">
         <iframe id="modalVideoPlayer" src="" frameborder="0" allowfullscreen></iframe>
       </div>
-      <p id="modalVideoDesc" style="margin-
+      <p id="modalVideoDesc" style="margin-top: 15px; color: #555;"></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
