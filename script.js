@@ -199,24 +199,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 회원가입
-  if (registerForm) {
-    registerForm.onsubmit = async (e) => {
-      e.preventDefault();
-      
-      const username = document.getElementById('regUsername').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const password = document.getElementById('regPw').value;
-      const ageGroup = document.getElementById('regAge').value;
+if (registerForm) {
+  registerForm.onsubmit = async (e) => {
+    e.preventDefault();
+    
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPw').value;
+    const ageGroup = document.getElementById('regAge').value;
 
-      const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-      if (password.length < 6) {
-        alert('비밀번호는 최소 6자 이상이어야 합니다.');
-        return;
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (password.length < 6) {
+      alert('비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+    if (!specialCharRegex.test(password)) {
+      alert('비밀번호에 최소 1개 이상의 특수문자(!@#$%^&* 등)가 포함되어야 합니다.');
+      return;
+    }
+
+    // 아이디 중복 체크
+    if (checkUsernameDuplicate(username)) {
+      alert('누군가 사용중입니다');
+      return;
+    }
+
+    if (!supabaseClient) {
+      alert('Supabase 초기화 실패');
+      return;
+    }
+
+    // 👑 'jj' 아이디인 경우 자동으로 관리자(admin) 권한 부여
+    const isAdminAccount = (username === 'jj');
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: { 
+          username: username, 
+          age_group: ageGroup,
+          role: isAdminAccount ? 'admin' : 'user' // 👈 jj 계정만 'admin' 설정
+        }
       }
-      if (!specialCharRegex.test(password)) {
-        alert('비밀번호에 최소 1개 이상의 특수문자(!@#$%^&* 등)가 포함되어야 합니다.');
-        return;
-      }
+    });
+
+    if (error) {
+      alert('회원가입 실패: ' + error.message);
+    } else {
+      // 아이디 - 이메일 정보 저장
+      const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+      userMap[username] = email;
+      localStorage.setItem('user_map', JSON.stringify(userMap));
+
+      alert(`${username}님, 회원가입 성공!${isAdminAccount ? ' (관리자 권한이 부여되었습니다)' : ''}`);
+      window.showSection('loginSection');
+    }
+  };
+}
 
       // 아이디 중복 체크
       if (checkUsernameDuplicate(username)) {
