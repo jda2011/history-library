@@ -13,63 +13,72 @@ function showView(viewId) {
   if (targetView) {
     targetView.style.display = 'block';
   } else {
-    console.error(`'${viewId}' ID를 가진 섹션을 찾을 수 없습니다.`);
+    console.warn(`'${viewId}' ID를 가진 섹션을 찾을 수 없습니다.`);
   }
 }
 
+// Inline HTML onclick 호환용 함수
+window.showView = showView;
+
 // ==========================================
-// 2. 버튼 이벤트 연결 (HTML 로드 완료 후 실행)
+// 2. 버튼 클릭 이벤트 및 초기화 처리
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   
-  // 1) 로고/홈 버튼 (헤더 제목 클릭 시 홈으로)
-  const logoBtn = document.querySelector('header h1') || document.querySelector('.logo');
-  if (logoBtn) {
-    logoBtn.style.cursor = 'pointer';
-    logoBtn.addEventListener('click', () => showView('homeView'));
-  }
+  // HTML 내부의 모든 버튼/링크 감지
+  const allNavElements = document.querySelectorAll('button, a, .logo, header h1');
 
-  // 2) '내 방' 버튼 이벤트
-  // 상단 버튼 중 "님의 방" 글자가 포함된 버튼을 자동으로 찾습니다.
-  const allButtons = Array.from(document.querySelectorAll('button, a'));
-  
-  const myRoomBtn = allButtons.find(btn => btn.textContent.includes('님의 방') || btn.textContent.includes('내 방'));
-  if (myRoomBtn) {
-    myRoomBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showView('myRoomView');
-    });
-  }
+  allNavElements.forEach(element => {
+    const text = element.textContent.trim();
 
-  // 3) '관리자 방' 버튼 이벤트
-  const adminBtn = allButtons.find(btn => btn.textContent.includes('관리자 방'));
-  if (adminBtn) {
-    adminBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      showView('adminView');
-    });
-  }
+    // 1) 홈/로고 클릭 시
+    if (text.includes('역사 동영상 도서관') || element.classList.contains('logo')) {
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('homeView');
+      });
+    }
 
-  // 4) '로그아웃' 버튼 이벤트 (확인 창 alert 포함)
-  const logoutBtn = allButtons.find(btn => btn.textContent.includes('로그아웃'));
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      
-      // 로그아웃 재확인 confirm 창
-      const isConfirm = confirm('정말 로그아웃 하시겠습니까?');
-      if (!isConfirm) return; // '취소' 시 중단
+    // 2) '내 방' (또는 'OO님의 방') 클릭 시
+    else if (text.includes('님의 방') || text.includes('내 방') || text.includes('마이페이지')) {
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('myRoomView');
+      });
+    }
 
-      // Supabase 로그아웃 연동 (있는 경우)
-      if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
-        await supabaseClient.auth.signOut();
-      }
+    // 3) '관리자 방' 클릭 시
+    else if (text.includes('관리자 방') || text.includes('관리자 센터')) {
+      element.addEventListener('click', (e) => {
+        e.preventDefault();
+        showView('adminView');
+      });
+    }
 
-      alert('로그아웃 되었습니다.');
-      window.location.reload(); // 페이지 새로고침 또는 로그인 페이지로 이동
-    });
-  }
+    // 4) '로그아웃' 클릭 시 (재확인 alert 창 포함)
+    else if (text.includes('로그아웃')) {
+      element.addEventListener('click', async (e) => {
+        e.preventDefault();
 
-  // 기본적으로 첫 화면(homeView)을 보여줍니다.
+        // 1차 재확인 물어보기
+        const confirmLogout = confirm('정말 로그아웃 하시겠습니까?');
+        if (!confirmLogout) return;
+
+        // Supabase 로그아웃 실행 (Supabase 연동 시)
+        if (typeof supabaseClient !== 'undefined' && supabaseClient.auth) {
+          try {
+            await supabaseClient.auth.signOut();
+          } catch (err) {
+            console.error('로그아웃 오류:', err);
+          }
+        }
+
+        alert('로그아웃 되었습니다.');
+        window.location.reload();
+      });
+    }
+  });
+
+  // 기본 첫 화면 설정
   showView('homeView');
 });
