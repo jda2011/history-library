@@ -19,24 +19,28 @@
 
     section { max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-    /* EBS 마이페이지 스타일 */
-    .ebs-profile-card { background: #e0f2fe; padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-    .ebs-avatar { width: 60px; height: 60px; background: #0284c7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .ebs-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-    .ebs-stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
-    .ebs-stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
+    /* 마이페이지 스타일 */
+    .profile-card { background: #e0f2fe; padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .avatar { width: 60px; height: 60px; background: #0284c7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
 
-    /* 폼 스타일 */
+    /* 폼 및 카드 레이아웃 */
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
     .pw-input-wrapper { display: flex; gap: 5px; }
 
-    /* 비디오 카드 Grid */
     .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
     .video-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; background: #fff; transition: transform 0.2s; }
     .video-card:hover { transform: translateY(-4px); }
     .video-thumbnail { height: 120px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 6px; }
+
+    /* 영상 시청 모달 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 700px; width: 90%; position: relative; }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -62,31 +66,32 @@
     <div class="video-grid" id="videoList"></div>
   </section>
 
-  <!-- EBS 스타일 개인 방 (마이페이지) -->
+  <!-- 개인 방 (마이페이지) -->
   <section id="myRoomSection" style="display:none;">
-    <div class="ebs-profile-card">
-      <div class="ebs-avatar">👤</div>
+    <div class="profile-card">
+      <div class="avatar">👤</div>
       <div>
         <h2 id="myRoomUsername">사용자</h2>
         <p style="color:#666; font-size:14px;" id="myEmail">-</p>
       </div>
     </div>
 
-    <h3>📊 나의 학습 현황 (EBS 나의 방)</h3>
-    <div class="ebs-stats-grid">
-      <div class="ebs-stat-box">시청한 강좌<strong id="myWatchCount">0개</strong></div>
-      <div class="ebs-stat-box">풀었던 퀴즈<strong id="myQuizCount">0개</strong></div>
-      <div class="ebs-stat-box">획득한 포인트<strong id="myPoints">0 PT</strong></div>
+    <!-- EBS 부제 삭제된 부분 -->
+    <h3>📊 나의 학습 현황</h3>
+    <div class="stats-grid">
+      <div class="stat-box">시청한 강좌<strong id="myWatchCount">0개</strong></div>
+      <div class="stat-box">풀었던 퀴즈<strong id="myQuizCount">0개</strong></div>
+      <div class="stat-box">획득한 포인트<strong id="myPoints">0 PT</strong></div>
     </div>
   </section>
 
-  <!-- 관리자 방 (jj 전용) -->
+  <!-- 관리자 방 -->
   <section id="adminSection" style="display:none;">
-    <h2>🛠️ 관리자 센터 (영상의 게시 및 문제 관리)</h2>
+    <h2>🛠️ 관리자 센터 (영상 게시 및 문제 관리)</h2>
     <hr style="margin: 15px 0;">
 
     <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
-      <h3>📺 영상 등록하기</h3>
+      <h3>📺 제작 영상 게시</h3>
       <form id="adminAddVideoForm" style="margin-top:10px;">
         <div class="form-group">
           <label>시대 구분</label>
@@ -97,15 +102,18 @@
             <option value="contemporary">현대</option>
           </select>
         </div>
-        <div class="form-group"><label>영상 제목</label><input type="text" id="adminVideoTitle" required></div>
-        <div class="form-group"><label>YouTube 비디오 ID</label><input type="text" id="adminVideoYoutubeId" placeholder="예: dQw4w9WgXcQ" required></div>
-        <div class="form-group"><label>설명</label><textarea id="adminVideoDesc" rows="2" required></textarea></div>
+        <div class="form-group"><label>영상 제목</label><input type="text" id="adminVideoTitle" placeholder="예: [고대] 고구려의 발전" required></div>
+        <div class="form-group">
+          <label>제작 영상 파일 URL (MP4 등)</label>
+          <input type="text" id="adminVideoUrl" placeholder="예: https://example.com/video.mp4 또는 유튜브 링크" required>
+        </div>
+        <div class="form-group"><label>영상 설명</label><textarea id="adminVideoDesc" rows="2" required></textarea></div>
         <button type="submit" class="btn-primary">영상 게시</button>
       </form>
     </div>
 
     <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
-      <h3>❓ 문제(퀴즈) 등록하기</h3>
+      <h3>❓ 문제(퀴즈) 게시</h3>
       <form id="adminAddQuizForm" style="margin-top:10px;">
         <div class="form-group">
           <label>연결할 영상</label>
@@ -137,7 +145,7 @@
     <form id="loginForm" style="margin-top:15px;">
       <div class="form-group">
         <label>아이디 또는 이메일</label>
-        <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required>
+        <input type="text" id="loginUsername" placeholder="아이디 입력" required>
       </div>
       <div class="form-group">
         <label>비밀번호</label>
@@ -166,6 +174,20 @@
       <button type="submit" class="btn-primary" style="width:100%; padding:12px;">가입하기</button>
     </form>
   </section>
+
+  <!-- 직접 제작 영상 재생용 팝업 모달 -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h3 id="modalVideoTitle" style="margin-bottom:10px;">영상 제목</h3>
+      
+      <!-- 직접 제작 영상 플레이어 (MP4 전용 및 일반 비디오 지원) -->
+      <video id="modalVideoPlayer" controls style="width:100%; max-height:400px; background:#000; border-radius:8px; display:none;"></video>
+      <iframe id="modalIframePlayer" style="width:100%; height:380px; border:none; border-radius:8px; display:none;"></iframe>
+      
+      <p id="modalVideoDesc" style="margin-top:10px; color:#555;"></p>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
