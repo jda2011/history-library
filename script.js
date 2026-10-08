@@ -8,7 +8,7 @@ SUPABASE_URL = SUPABASE_URL.replace(/\/+$|\/auth\/v1.*$/g, '');
 
 let supabaseClient = null;
 try {
-  if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';) {
+  if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc') {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (e) {
