@@ -28,7 +28,7 @@
 
   <!-- 메인 콘텐츠 영역 -->
   <main class="container">
-    <!-- 1. 홈 화면 (시대별 부록 및 동영상 목록) -->
+    <!-- 1. 홈 화면 -->
     <div id="homeSection" class="section">
       <h1>🎬 역사 동영상 시청하기</h1>
       <p id="welcomeMsg">로그인 후 다양한 역사 동영상을 시청해보세요!</p>
@@ -44,9 +44,7 @@
       </div>
       
       <!-- 영상 목록 -->
-      <div class="video-grid" id="videoList">
-        <!-- JS에서 동적으로 카드가 생성됩니다 -->
-      </div>
+      <div class="video-grid" id="videoList"></div>
     </div>
 
     <!-- 2. 개인 방 (마이페이지) -->
@@ -100,24 +98,30 @@
       </form>
     </div>
 
-    <!-- 4. 로그인 화면 (아이디 입력으로 변경) -->
+    <!-- 4. 로그인 화면 -->
     <div id="loginSection" class="section" style="display: none;">
       <h2>로그인</h2>
       <form id="loginForm">
         <div class="input-group">
-          <label for="loginUsername">아이디</label>
-          <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required />
+          <label for="loginUsername">아이디 또는 이메일</label>
+          <input type="text" id="loginUsername" placeholder="아이디 또는 이메일 입력" required />
         </div>
+        
+        <!-- 로그인 비밀번호 입력 및 보임/숨김 버튼 -->
         <div class="input-group">
           <label for="loginPw">비밀번호</label>
-          <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" required />
+          <div class="pw-wrapper">
+            <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" required />
+            <button type="button" id="toggleLoginPwBtn" class="btn-toggle">보임</button>
+          </div>
         </div>
+
         <button type="submit" class="submit-btn">로그인</button>
       </form>
     </div>
   </main>
 
-  <!-- 동영상 시청 모달 (팝업창) -->
+  <!-- 동영상 시청 모달 -->
   <div id="videoModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close-btn" id="closeModalBtn">&times;</span>
@@ -125,10 +129,4 @@
       <div class="video-container">
         <iframe id="modalVideoPlayer" src="" frameborder="0" allowfullscreen></iframe>
       </div>
-      <p id="modalVideoDesc" style="margin-top: 15px; color: #555;"></p>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
+      <p id="modalVideoDesc" style="margin-
