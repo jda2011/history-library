@@ -1,16 +1,18 @@
 // Supabase 설정
-let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; 
+let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co';
+
+// ⚠️ 아래 ' ' 안에 Supabase 발급 키를 그대로 넣으셔야 합니다.
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
-SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
+SUPABASE_URL = SUPABASE_URL.replace(/\/+$|\/auth\/v1.*$/g, '');
 
 let supabaseClient = null;
 try {
-  if (window.supabase && SUPABASE_ANON_KEY !== ''sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc') {
+  if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';) {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (e) {
-  console.warn("Supabase 클라이언트 초기화 대기 중");
+  console.warn("Supabase 클라이언트 초기화 중 문제 발생:", e);
 }
 
 // 시대별 영상 데이터
