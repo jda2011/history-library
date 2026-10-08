@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerForm = document.getElementById('registerForm');
   const loginForm = document.getElementById('loginForm');
 
-  // 비밀번호 보임/숨김 버튼
-  const togglePwBtn = document.getElementById('togglePwBtn');
+  // 비밀번호 보임/숨김 버튼 요소 (여러 ID 형태 대응)
+  const togglePwBtn = document.getElementById('togglePwBtn') || document.getElementById('toggleRegisterPwBtn');
   const regPwInput = document.getElementById('regPw');
   const toggleLoginPwBtn = document.getElementById('toggleLoginPwBtn');
   const loginPwInput = document.getElementById('loginPw');
@@ -78,38 +78,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(() => updateAuthState(null));
   }
 
-  // 3. 네비게이션 버튼 이벤트 바인딩
-  if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.showSection('homeSection'));
-  if (navLoginBtn) navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
-  if (navRegisterBtn) navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
-  if (navMyRoomBtn) navMyRoomBtn.addEventListener('click', () => window.showSection('myRoomSection'));
+  // 3. 네비게이션 버튼 이벤트
+  if (navHomeBtn) navHomeBtn.onclick = () => window.showSection('homeSection');
+  if (navLoginBtn) navLoginBtn.onclick = () => window.showSection('loginSection');
+  if (navRegisterBtn) navRegisterBtn.onclick = () => window.showSection('registerSection');
+  if (navMyRoomBtn) navMyRoomBtn.onclick = () => window.showSection('myRoomSection');
 
   if (navLogoutBtn) {
-    navLogoutBtn.addEventListener('click', async () => {
+    navLogoutBtn.onclick = async () => {
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
         await supabaseClient.auth.signOut();
       }
       updateAuthState(null);
       alert('로그아웃 되었습니다.');
       window.showSection('homeSection');
-    });
+    };
   }
 
-  // 4. 비밀번호 보임/숨김 토글 버튼 인식
+  // 4. 비밀번호 보임/숨김 토글 버튼 (확실한 토글 처리)
   if (togglePwBtn && regPwInput) {
-    togglePwBtn.addEventListener('click', () => {
-      const isPw = regPwInput.type === 'password';
+    togglePwBtn.onclick = (e) => {
+      e.preventDefault();
+      const isPw = (regPwInput.type === 'password');
       regPwInput.type = isPw ? 'text' : 'password';
       togglePwBtn.textContent = isPw ? '숨김' : '보임';
-    });
+    };
   }
 
   if (toggleLoginPwBtn && loginPwInput) {
-    toggleLoginPwBtn.addEventListener('click', () => {
-      const isPw = loginPwInput.type === 'password';
+    toggleLoginPwBtn.onclick = (e) => {
+      e.preventDefault();
+      const isPw = (loginPwInput.type === 'password');
       loginPwInput.type = isPw ? 'text' : 'password';
       toggleLoginPwBtn.textContent = isPw ? '숨김' : '보임';
-    });
+    };
   }
 
   // 5. 영상 카드 렌더링
@@ -130,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>${video.desc}</p>
       `;
 
-      card.addEventListener('click', () => {
+      card.onclick = () => {
         if (!currentUser) {
           alert('영상을 시청하시려면 먼저 로그인해 주세요!');
           window.showSection('loginSection');
@@ -144,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalVideoDesc) modalVideoDesc.textContent = video.desc;
         if (modalVideoPlayer) modalVideoPlayer.src = `https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`;
         if (videoModal) videoModal.style.display = 'flex';
-      });
+      };
 
       videoList.appendChild(card);
     });
@@ -153,33 +155,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // 6. 시대별 탭 필터링
   const eraButtons = document.querySelectorAll('.era-btn');
   eraButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.onclick = (e) => {
       eraButtons.forEach(b => b.classList.remove('active'));
       e.currentTarget.classList.add('active');
       window.renderVideos(e.currentTarget.dataset.era);
-    });
+    };
   });
 
   // 7. 모달 닫기
   if (closeModalBtn) {
-    closeModalBtn.addEventListener('click', () => {
+    closeModalBtn.onclick = () => {
       if (videoModal) videoModal.style.display = 'none';
       const modalVideoPlayer = document.getElementById('modalVideoPlayer');
       if (modalVideoPlayer) modalVideoPlayer.src = '';
-    });
+    };
   }
 
   window.renderVideos('all');
 
-  // 8. 회원가입 처리
+  // 8. 회원가입 (아이디 기반 가상 이메일 지원)
   if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
+    registerForm.onsubmit = async (e) => {
       e.preventDefault();
 
       const username = document.getElementById('regUsername').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
+      const emailInput = document.getElementById('regEmail') ? document.getElementById('regEmail').value.trim() : '';
       const password = document.getElementById('regPw').value;
-      const ageGroup = document.getElementById('regAge').value;
+      const ageGroup = document.getElementById('regAge') ? document.getElementById('regAge').value : '';
 
       if (password.length < 6) {
         alert('비밀번호는 최소 6자 이상이어야 합니다.');
@@ -191,10 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // 입력한 이메일이 없거나 아이디 형태면 자동으로 가상 이메일 생성
+      const finalEmail = (emailInput && emailInput.includes('@')) ? emailInput : `${username}@library.com`;
       const isAdminAccount = (username === 'jj');
 
       const { data, error } = await supabaseClient.auth.signUp({
-        email: email,
+        email: finalEmail,
         password: password,
         options: {
           data: {
@@ -208,19 +212,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
-        const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
-        userMap[username] = email;
-        localStorage.setItem('user_map', JSON.stringify(userMap));
-
         alert(`${username}님, 회원가입 성공!${isAdminAccount ? ' (관리자 권한)' : ''}`);
         window.showSection('loginSection');
       }
-    });
+    };
   }
 
-  // 9. 로그인 처리 (아이디 또는 이메일 자동 매핑)
+  // 9. 로그인 (아이디 ➔ 가상 이메일 자동 일치)
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
 
       const inputVal = document.getElementById('loginUsername').value.trim();
@@ -231,12 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
-      let targetEmail = userMap[inputVal];
-
-      if (!targetEmail) {
-        targetEmail = inputVal.includes('@') ? inputVal : `${inputVal}@library.com`;
-      }
+      // 입력된 값이 이메일 형태가 아니면 자동으로 @library.com 부여
+      const targetEmail = inputVal.includes('@') ? inputVal : `${inputVal}@library.com`;
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: targetEmail,
@@ -251,6 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`${displayName}님 환영합니다!`);
         window.showSection('homeSection');
       }
-    });
+    };
   }
 });
