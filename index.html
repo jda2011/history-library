@@ -213,3 +213,61 @@
   <script src="admin.js"></script>
 </body>
 </html>
+
+<!-- 메인 페이지 / 홈 영역 -->
+<section id="homeView" class="view-section">
+  <h2>📚 역사 동영상 목록</h2>
+  <p>원하는 역사의 순간을 선택해 시청해 보세요.</p>
+  <!-- 동영상 카드들이 들어가는 영역 -->
+</section>
+
+<!-- 内 방 (My Room View) -->
+<section id="myRoomView" class="view-section" style="display: none;">
+  <div class="my-room-container">
+    <div class="profile-header-card">
+      <div class="user-avatar">🎓</div>
+      <div class="user-details">
+        <h3><span id="myRoomNickname">jj</span> 님의 EBS 학습 공간</h3>
+        <p class="email-text" id="myRoomEmail">8yskvkwj@gmail.com</p>
+      </div>
+      <div class="learning-summary">
+        <div class="summary-item">
+          <span class="label">시청한 영상</span>
+          <span class="value">12개</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">완료한 퀴즈</span>
+          <span class="value">8개</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="my-room-grid">
+      <div class="dashboard-card">
+        <h4>📺 최근 시청한 역사 영상</h4>
+        <p>최근 시청 기록이 여기에 표시됩니다.</p>
+      </div>
+      <div class="dashboard-card">
+        <h4>⭐ 내가 즐겨찾기한 영상</h4>
+        <p>북마크한 영상 목록입니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 관리자 방 (Admin View) -->
+<section id="adminView" class="view-section" style="display: none;">
+  <div class="admin-container">
+    <h2>🛠️ 관리자 대시보드</h2>
+    <p>영상 관리 및 학습 퀴즈를 등록하고 관리합니다.</p>
+    
+    <div class="admin-card">
+      <h3>📹 새 동영상 등록</h3>
+      <form id="addVideoForm">
+        <input type="text" placeholder="영상 제목" required>
+        <input type="url" placeholder="YouTube URL" required>
+        <button type="submit" class="btn-primary">등록하기</button>
+      </form>
+    </div>
+  </div>
+</section>
