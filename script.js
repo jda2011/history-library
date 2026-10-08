@@ -1,4 +1,4 @@
-// script.js - 메인 로직 및 화면 전환
+// script.js - 메인 로직 및 안정적인 화면 전환
 
 document.addEventListener('DOMContentLoaded', () => {
   // DOM 요소 선택
@@ -24,64 +24,74 @@ document.addEventListener('DOMContentLoaded', () => {
     logout: document.getElementById('navLogoutBtn')
   };
 
-  // 화면 전환 함수
+  // 안전한 화면 전환 함수
   function showSection(targetSection) {
     Object.values(sections).forEach(sec => {
       if (sec) sec.style.display = 'none';
     });
-    if (targetSection) targetSection.style.display = 'block';
+    if (targetSection) {
+      targetSection.style.display = 'block';
+    }
   }
 
   // 상단 로고 클릭 -> 홈 이동
   if (btns.home) {
-    btns.home.addEventListener('click', () => {
+    btns.home.onclick = () => {
       showSection(sections.home);
       loadVideos();
-    });
+    };
   }
 
   // 로그인 버튼 클릭 -> 로그인 화면 이동
   if (btns.login) {
-    btns.login.addEventListener('click', () => {
+    btns.login.onclick = () => {
       showSection(sections.login);
-    });
+    };
   }
 
   // 회원가입 버튼 클릭 -> 회원가입 화면 이동
   if (btns.register) {
-    btns.register.addEventListener('click', () => {
+    btns.register.onclick = () => {
       showSection(sections.register);
-    });
+    };
   }
 
   // 내 방 버튼 클릭 -> 마이페이지 이동
   if (btns.myRoom) {
-    btns.myRoom.addEventListener('click', () => {
+    btns.myRoom.onclick = () => {
       showSection(sections.myRoom);
       loadMyProfile();
-    });
+    };
   }
 
   // 로그아웃
   if (btns.logout) {
-    btns.logout.addEventListener('click', async () => {
-      if (typeof supabaseClient !== 'undefined') {
-        await supabaseClient.auth.signOut();
+    btns.logout.onclick = async () => {
+      try {
+        if (typeof supabaseClient !== 'undefined') {
+          await supabaseClient.auth.signOut();
+        }
+      } catch (err) {
+        console.warn('로그아웃 중 오류:', err);
       }
       localStorage.removeItem('userSession');
       alert('로그아웃 되었습니다.');
       checkAuthState();
       showSection(sections.home);
-    });
+    };
   }
 
   // 로그인 상태 확인 및 UI 반영
   async function checkAuthState() {
     let user = null;
 
-    if (typeof supabaseClient !== 'undefined') {
-      const { data } = await supabaseClient.auth.getUser();
-      user = data?.user;
+    try {
+      if (typeof supabaseClient !== 'undefined') {
+        const { data } = await supabaseClient.auth.getUser();
+        user = data?.user;
+      }
+    } catch (err) {
+      console.warn('사용자 인증 확인 실패:', err);
     }
 
     if (user) {
@@ -89,9 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (navs.user) navs.user.style.display = 'flex';
 
       const nicknameDisplay = document.getElementById('userNicknameDisplay');
-      if (nicknameDisplay) nicknameDisplay.textContent = user.user_metadata?.nickname || user.email.split('@')[0];
+      if (nicknameDisplay) {
+        nicknameDisplay.textContent = user.user_metadata?.nickname || user.email.split('@')[0];
+      }
 
-      // 관리자 권한 확인 (예: 특정 아이디나 메일)
       if (btns.admin) {
         btns.admin.style.display = 'inline-block';
       }
@@ -104,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 로그인 폼 제출 처리
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginUsername').value;
       const pw = document.getElementById('loginPw').value;
@@ -118,30 +129,63 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) throw error;
 
         alert('로그인되었습니다!');
-        checkAuthState();
+        await checkAuthState();
         showSection(sections.home);
       } catch (err) {
         alert('로그인 실패: ' + (err.message || '아이디와 비밀번호를 확인하세요.'));
       }
-    });
+    };
   }
 
-  // 영상 목록 가져오기 함수 (글로벌 바인딩)
+  // 회원가입 폼 제출 처리
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('regEmail').value;
+      const pw = document.getElementById('regPw').value;
+      const username = document.getElementById('regUsername').value;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: pw,
+          options: {
+            data: { nickname: username }
+          }
+        });
+
+        if (error) throw error;
+
+        alert('회원가입 신청이 완료되었습니다! (이메일 인증 확인 필요)');
+        showSection(sections.login);
+      } catch (err) {
+        alert('회원가입 실패: ' + (err.message || '다시 시도해 주세요.'));
+      }
+    };
+  }
+
+  // 영상 목록 가져오기 함수 (에러 방어 완비)
   window.loadVideos = async function() {
     const videoList = document.getElementById('videoList');
     if (!videoList) return;
 
-    videoList.innerHTML = '<p>영상을 불러오는 중...</p>';
-
     try {
-      if (typeof supabaseClient === 'undefined') return;
+      if (typeof supabaseClient === 'undefined') {
+        videoList.innerHTML = '<p style="grid-column:1/-1; color:#888;">Supabase가 설정되지 않았습니다.</p>';
+        return;
+      }
 
       const { data: videos, error } = await supabaseClient
         .from('videos')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.warn('영상 목록 로드 실패 (테이블 확인 필요):', error);
+        videoList.innerHTML = '<p style="grid-column:1/-1; color:#888;">현재 등록된 영상이 없거나 DB 연결 준비 중입니다.</p>';
+        return;
+      }
 
       if (!videos || videos.length === 0) {
         videoList.innerHTML = '<p style="grid-column:1/-1; color:#888;">등록된 영상이 없습니다.</p>';
@@ -161,8 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
         videoList.appendChild(card);
       });
     } catch (err) {
-      console.error(err);
-      videoList.innerHTML = '<p>영상 목록을 불러올 수 없습니다.</p>';
+      console.warn('영상 로드 중 예외 발생:', err);
+      videoList.innerHTML = '<p style="grid-column:1/-1; color:#888;">영상 데이터를 불러올 수 없습니다.</p>';
     }
   };
 
@@ -198,14 +242,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 마이페이지 정보 로드
   async function loadMyProfile() {
-    const { data } = await supabaseClient.auth.getUser();
-    if (data?.user) {
-      document.getElementById('myRoomUsername').textContent = data.user.user_metadata?.nickname || '사용자';
-      document.getElementById('myEmail').textContent = data.user.email;
+    try {
+      const { data } = await supabaseClient.auth.getUser();
+      if (data?.user) {
+        const user = data.user;
+        document.getElementById('myRoomUsername').textContent = user.user_metadata?.nickname || '사용자';
+        document.getElementById('myEmail').textContent = user.email;
+      }
+    } catch (err) {
+      console.warn('프로필 로드 실패:', err);
     }
   }
 
-  // 초기화 실행
+  // 초기 시작 실행
   checkAuthState();
   loadVideos();
 });
