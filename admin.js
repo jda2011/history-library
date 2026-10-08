@@ -1,138 +1,224 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>역사 동영상 도서관</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
-    body { background-color: #fdfbf7; color: #333; }
-    
-    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #fff0f3; border-bottom: 2px solid #ffccd5; }
-    header h1 { font-size: 22px; color: #d63384; cursor: pointer; }
-    nav { display: flex; gap: 10px; align-items: center; }
-    
-    button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; transition: 0.2s; }
-    .btn-primary { background: #3b82f6; color: white; }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-admin { background: #8b5cf6; color: white; }
+// admin.js - 관리자 기능 관련 JS
 
-    section { max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+document.addEventListener('DOMContentLoaded', () => {
+  const adminSection = document.getElementById('adminSection');
+  const navAdminBtn = document.getElementById('navAdminBtn');
+  
+  const adminAddVideoForm = document.getElementById('adminAddVideoForm');
+  const adminVideoEra = document.getElementById('adminVideoEra');
+  const adminVideoTitle = document.getElementById('adminVideoTitle');
+  const adminVideoFileInput = document.getElementById('adminVideoFileInput');
+  const adminVideoDesc = document.getElementById('adminVideoDesc');
+  const uploadProgressText = document.getElementById('uploadProgressText');
+  const adminVideoSubmitBtn = document.getElementById('adminVideoSubmitBtn');
 
-    /* 마이페이지 스타일 */
-    .profile-card { background: #e0f2fe; padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-    .avatar { width: 60px; height: 60px; background: #0284c7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
-    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
-    .stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
+  const adminAddQuizForm = document.getElementById('adminAddQuizForm');
+  const adminQuizVideoSelect = document.getElementById('adminQuizVideoSelect');
+  const adminQuizQuestion = document.getElementById('adminQuizQuestion');
+  const adminQuizOpt1 = document.getElementById('adminQuizOpt1');
+  const adminQuizOpt2 = document.getElementById('adminQuizOpt2');
+  const adminQuizOpt3 = document.getElementById('adminQuizOpt3');
+  const adminQuizOpt4 = document.getElementById('adminQuizOpt4');
+  const adminQuizAnswer = document.getElementById('adminQuizAnswer');
 
-    /* 폼 레이아웃 정돈 */
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; }
-    .form-group input[type="text"], 
-    .form-group input[type="password"], 
-    .form-group input[type="email"], 
-    .form-group select, 
-    .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    .form-group input[type="file"] { padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
-    .pw-input-wrapper { display: flex; gap: 5px; }
+  const adminManageList = document.getElementById('adminManageList');
 
-    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
-    .video-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; background: #fff; transition: transform 0.2s; }
-    .video-card:hover { transform: translateY(-4px); }
-    .video-thumbnail { height: 120px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 6px; }
+  // 관리자 방 이동 버튼 클릭 시
+  if (navAdminBtn) {
+    navAdminBtn.addEventListener('click', () => {
+      // 모든 섹션 숨기기 후 관리자 섹션만 표시
+      document.querySelectorAll('section').forEach(sec => sec.style.display = 'none');
+      if (adminSection) adminSection.style.display = 'block';
+      
+      // 관리자 화면용 데이터 로드
+      loadAdminVideoOptions();
+      loadAdminManageList();
+    });
+  }
 
-    /* 영상 시청 모달 */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 700px; width: 90%; position: relative; }
-    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
-  </style>
-</head>
-<body>
+  // 1. 제작 영상 게시 및 스토리지 업로드
+  if (adminAddVideoForm) {
+    adminAddVideoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-  <header>
-    <h1 id="navHomeBtn">📜 역사 동영상 도서관</h1>
-    <nav id="guestNav">
-      <button class="btn-primary" id="navLoginBtn">로그인</button>
-      <button class="btn-primary" id="navRegisterBtn" style="background:#10b981;">회원가입</button>
-    </nav>
-    <nav id="userNav" style="display:none;">
-      <span id="adminBadge" style="display:none; background:#8b5cf6; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">관리자 계정</span>
-      <button class="btn-primary" id="navMyRoomBtn">👤 <span id="userNicknameDisplay"></span>님의 방</button>
-      <button class="btn-admin" id="navAdminBtn" style="display:none;">🛠️ 관리자 방</button>
-      <button class="btn-danger" id="navLogoutBtn">로그아웃</button>
-    </nav>
-  </header>
+      const file = adminVideoFileInput.files[0];
+      if (!file) {
+        alert('업로드할 영상 파일을 선택해주세요.');
+        return;
+      }
 
-  <!-- 메인 시청 영역 -->
-  <section id="homeSection">
-    <h2>🎬 역사 동영상 시청하기</h2>
-    <p style="color:#666; margin-top:5px;">원하는 시대를 선택하여 영상을 시청해보세요.</p>
-    <div class="video-grid" id="videoList"></div>
-  </section>
+      try {
+        if (uploadProgressText) uploadProgressText.style.display = 'block';
+        if (adminVideoSubmitBtn) adminVideoSubmitBtn.disabled = true;
 
-  <!-- 개인 방 (마이페이지) -->
-  <section id="myRoomSection" style="display:none;">
-    <div class="profile-card">
-      <div class="avatar">👤</div>
-      <div>
-        <h2 id="myRoomUsername">사용자</h2>
-        <p style="color:#666; font-size:14px;" id="myEmail">-</p>
-      </div>
-    </div>
+        // Supabase Storage에 영상 파일 업로드
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const filePath = `videos/${fileName}`;
 
-    <h3>📊 나의 학습 현황</h3>
-    <div class="stats-grid">
-      <div class="stat-box">시청한 강좌<strong id="myWatchCount">0개</strong></div>
-      <div class="stat-box">풀었던 퀴즈<strong id="myQuizCount">0개</strong></div>
-      <div class="stat-box">획득한 포인트<strong id="myPoints">0 PT</strong></div>
-    </div>
-  </section>
+        const { data: uploadData, error: uploadError } = await supabaseClient
+          .storage
+          .from('history_videos')
+          .upload(filePath, file);
 
-  <!-- 관리자 방 (제작 영상 업로드 폼 포함) -->
-  <section id="adminSection" style="display:none;">
-    <h2>🛠️ 관리자 센터 (영상 게시 및 문제 관리)</h2>
-    <hr style="margin: 15px 0;">
+        if (uploadError) throw uploadError;
 
-    <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
-      <h3>📺 제작 영상 게시 및 업로드</h3>
-      <form id="adminAddVideoForm" style="margin-top:15px;">
-        <div class="form-group">
-          <label>시대 구분</label>
-          <select id="adminVideoEra">
-            <option value="ancient">고대</option>
-            <option value="medieval">중세</option>
-            <option value="modern">근대</option>
-            <option value="contemporary">현대</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>영상 제목</label>
-          <input type="text" id="adminVideoTitle" placeholder="예: [고대] 고구려의 발전" required>
-        </div>
-        
-        <div class="form-group">
-          <label>영상 파일 업로드 (.mp4, .webm)</label>
-          <input type="file" id="adminVideoFileInput" accept="video/mp4, video/webm" required>
-          <p id="uploadProgressText" style="font-size:12px; color:#3b82f6; margin-top:6px; display:none;">영상을 업로드 중입니다. 잠시만 기다려 주세요...</p>
-        </div>
+        // 업로드된 파일의 Public URL 가져오기
+        const { data: urlData } = supabaseClient
+          .storage
+          .from('history_videos')
+          .getPublicUrl(filePath);
 
-        <div class="form-group">
-          <label>영상 설명</label>
-          <textarea id="adminVideoDesc" rows="3" placeholder="영상 설명을 입력하세요..." required></textarea>
-        </div>
-        <button type="submit" class="btn-primary" id="adminVideoSubmitBtn" style="padding:10px 20px;">영상 게시 및 업로드</button>
-      </form>
-    </div>
+        const videoUrl = urlData.publicUrl;
 
-    <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
-      <h3>❓ 문제(퀴즈) 게시</h3>
-      <form id="adminAddQuizForm" style="margin-top:15px;">
-        <div class="form-group">
-          <label>연결할 영상</label>
-          <select id="adminQuizVideoSelect" required></select>
-        </div>
-        <div class="form-group"><label>퀴즈 질문</label><input type="text" id="adminQuizQuestion" required></div>
-        <div class="form-group"><label>보기 1</label><input type="text" id="adminQuizOpt1" required></div>
-        <div class="form-group"><label>보기 2</label><input type="text" id="adminQuizOpt2" required></div>
-        <div class="form-group"><label>보기 3</label><input type="text" id="adminQuiz
+        // Database (videos 테이블)에 영상 정보 저장
+        const { error: dbError } = await supabaseClient
+          .from('videos')
+          .insert([
+            {
+              era: adminVideoEra.value,
+              title: adminVideoTitle.value,
+              description: adminVideoDesc.value,
+              video_url: videoUrl,
+              created_at: new Date().toISOString()
+            }
+          ]);
+
+        if (dbError) throw dbError;
+
+        alert('영상 게시 및 업로드가 완료되었습니다!');
+        adminAddVideoForm.reset();
+        loadAdminVideoOptions();
+        loadAdminManageList();
+        if (typeof loadVideos === 'function') loadVideos(); // 메인 영상 목록 갱신
+
+      } catch (err) {
+        console.error('영상 업로드 에러:', err);
+        alert('영상 업로드 중 오류가 발생했습니다: ' + (err.message || err));
+      } finally {
+        if (uploadProgressText) uploadProgressText.style.display = 'none';
+        if (adminVideoSubmitBtn) adminVideoSubmitBtn.disabled = false;
+      }
+    });
+  }
+
+  // 2. 퀴즈 셀렉트박스에 영상 목록 불러오기
+  async function loadAdminVideoOptions() {
+    if (!adminQuizVideoSelect) return;
+    adminQuizVideoSelect.innerHTML = '<option value="">영상을 선택하세요</option>';
+
+    try {
+      const { data: videos, error } = await supabaseClient
+        .from('videos')
+        .select('id, title')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      videos.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.title;
+        adminQuizVideoSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('퀴즈용 영상 목록 로드 에러:', err);
+    }
+  }
+
+  // 3. 문제(퀴즈) 등록
+  if (adminAddQuizForm) {
+    adminAddQuizForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const videoId = adminQuizVideoSelect.value;
+      if (!videoId) {
+        alert('연결할 영상을 선택해주세요.');
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient
+          .from('quizzes')
+          .insert([
+            {
+              video_id: videoId,
+              question: adminQuizQuestion.value,
+              option1: adminQuizOpt1.value,
+              option2: adminQuizOpt2.value,
+              option3: adminQuizOpt3.value,
+              option4: adminQuizOpt4.value,
+              answer: parseInt(adminQuizAnswer.value, 10)
+            }
+          ]);
+
+        if (error) throw error;
+
+        alert('문제 게시가 완료되었습니다!');
+        adminAddQuizForm.reset();
+      } catch (err) {
+        console.error('퀴즈 등록 에러:', err);
+        alert('문제 등록 중 오류가 발생했습니다.');
+      }
+    });
+  }
+
+  // 4. 등록된 콘텐츠 관리 및 삭제 목록
+  async function loadAdminManageList() {
+    if (!adminManageList) return;
+    adminManageList.innerHTML = '<p style="color:#666;">콘텐츠 목록을 불러오는 중...</p>';
+
+    try {
+      const { data: videos, error } = await supabaseClient
+        .from('videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!videos || videos.length === 0) {
+        adminManageList.innerHTML = '<p style="color:#888;">등록된 영상이 없습니다.</p>';
+        return;
+      }
+
+      adminManageList.innerHTML = '';
+      videos.forEach(v => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; background:#fff; margin-bottom:6px; border-radius:6px;';
+        item.innerHTML = `
+          <div>
+            <strong>[${v.era}] ${v.title}</strong>
+            <p style="font-size:12px; color:#666; margin-top:2px;">${v.description}</p>
+          </div>
+          <button class="btn-danger" style="padding:6px 12px; font-size:12px;" onclick="deleteVideo('${v.id}')">삭제</button>
+        `;
+        adminManageList.appendChild(item);
+      });
+    } catch (err) {
+      console.error('관리 데이터 로드 에러:', err);
+      adminManageList.innerHTML = '<p style="color:red;">목록을 불러오지 못했습니다.</p>';
+    }
+  }
+
+  // 영상 삭제 함수 (글로벌 바인딩)
+  window.deleteVideo = async function(videoId) {
+    if (!confirm('이 영상을 정말 삭제하시겠습니까? 관련 퀴즈도 함께 삭제됩니다.')) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('videos')
+        .delete()
+        .eq('id', videoId);
+
+      if (error) throw error;
+
+      alert('삭제되었습니다.');
+      loadAdminVideoOptions();
+      loadAdminManageList();
+      if (typeof loadVideos === 'function') loadVideos();
+    } catch (err) {
+      console.error('삭제 에러:', err);
+      alert('삭제 중 오류가 발생했습니다.');
+    }
+  };
+});
