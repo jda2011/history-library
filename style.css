@@ -612,14 +612,14 @@ body {
   color: #777;
 }
 
-/* 모달 전체 배경 */
+/* 모달 배경 (연분홍 톤) */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: #fcf0f2; /* 이미지의 은은한 핑크 배경 */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -629,79 +629,97 @@ body {
 /* 모달 카드 상자 */
 .modal-content {
   background: #ffffff;
-  padding: 30px;
-  border-radius: 16px;
+  padding: 40px 32px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 380px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-width: 360px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   position: relative;
+  box-sizing: border-box;
 }
 
-.modal-content h2 {
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 22px;
+/* 닫기 버튼 (X) */
+.close-modal {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 24px;
+  color: #aaa;
+  cursor: pointer;
+}
+.close-modal:hover {
   color: #333;
 }
 
-/* 입력폼 세로 정렬 */
+/* 제목 */
+.modal-title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 800;
+  color: #222222;
+  margin-top: 0;
+  margin-bottom: 28px;
+}
+
+/* 입력 필드 그룹 */
 .input-group {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
 }
 
 .input-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
-  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #222222;
+  margin-bottom: 8px;
 }
 
 .input-group input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-/* 비밀번호 보이기/숨기기(👁️) 버튼 위치 조절 */
-.password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.password-wrapper input {
-  padding-right: 40px;
-}
-
-.toggle-password-btn {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0;
-}
-
-/* 버튼 스타일 */
-.full-btn {
-  width: 100%;
-  padding: 12px;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
 }
 
-.full-btn:hover {
-  background-color: #2563eb;
+.input-group input::placeholder {
+  color: #a0aec0;
+}
+
+.input-group input:focus {
+  border-color: #3b82f6;
+}
+
+/* 제출 버튼 공통 */
+.btn-submit {
+  width: 100%;
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity 0.2s;
+}
+
+.btn-submit:hover {
+  opacity: 0.9;
+}
+
+/* 로그인 버튼 (파란색) */
+.btn-login-submit {
+  background-color: #3b82f6;
+}
+
+/* 회원가입 버튼 (초록색) */
+.btn-signup-submit {
+  background-color: #10b981;
 }
