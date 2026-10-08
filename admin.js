@@ -5,27 +5,77 @@ window.customVideoData = JSON.parse(localStorage.getItem('custom_video_data')) |
 window.customQuizData = JSON.parse(localStorage.getItem('custom_quiz_data')) || [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 직접 제작 영상 게시
   const adminAddVideoForm = document.getElementById('adminAddVideoForm');
+  
   if (adminAddVideoForm) {
-    adminAddVideoForm.addEventListener('submit', (e) => {
+    adminAddVideoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const newVideo = {
-        id: Date.now(),
-        era: document.getElementById('adminVideoEra').value,
-        title: document.getElementById('adminVideoTitle').value.trim(),
-        videoUrl: document.getElementById('adminVideoUrl').value.trim(),
-        desc: document.getElementById('adminVideoDesc').value.trim()
-      };
 
-      window.customVideoData.push(newVideo);
-      localStorage.setItem('custom_video_data', JSON.stringify(window.customVideoData));
-      alert('새로운 직접 제작 영상이 성공적으로 게시되었습니다!');
-      adminAddVideoForm.reset();
-      
-      if (typeof window.renderVideos === 'function') window.renderVideos();
-      window.renderAdminManageList();
-      window.populateQuizVideoSelect();
+      const submitBtn = document.getElementById('adminVideoSubmitBtn');
+      const progressText = document.getElementById('uploadProgressText');
+      const fileInput = document.getElementById('adminVideoFileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert('업로드할 영상 파일을 선택해 주세요.');
+        return;
+      }
+
+      try {
+        // 버튼 비활성화 및 안내 문구
+        submitBtn.disabled = true;
+        progressText.style.display = 'block';
+
+        // 파일명 중복 방지를 위한 고유 파일명 생성
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+        const filePath = `uploaded/${fileName}`;
+
+        // Supabase Storage에 파일 업로드
+        const { data: uploadData, error: uploadError } = await supabaseClient
+          .storage
+          .from('videos')
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw new Error('Storage 업로드 실패: ' + uploadError.message);
+        }
+
+        // 업로드된 파일의 Public URL 가져오기
+        const { data: urlData } = supabaseClient
+          .storage
+          .from('videos')
+          .getPublicUrl(filePath);
+
+        const uploadedVideoUrl = urlData.publicUrl;
+
+        // 영상 데이터 객체 생성
+        const newVideo = {
+          id: Date.now(),
+          era: document.getElementById('adminVideoEra').value,
+          title: document.getElementById('adminVideoTitle').value.trim(),
+          videoUrl: uploadedVideoUrl,
+          desc: document.getElementById('adminVideoDesc').value.trim()
+        };
+
+        // 데이터 저장
+        window.customVideoData.push(newVideo);
+        localStorage.setItem('custom_video_data', JSON.stringify(window.customVideoData));
+
+        alert('영상 파일이 성공적으로 업로드 및 게시되었습니다!');
+        adminAddVideoForm.reset();
+
+        // 목록 리프레시
+        if (typeof window.renderVideos === 'function') window.renderVideos();
+        window.renderAdminManageList();
+        window.populateQuizVideoSelect();
+
+      } catch (err) {
+        alert('오류 발생: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        progressText.style.display = 'none';
+      }
     });
   }
 
@@ -62,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// 관리자 삭제 관리 렌더링
+// 관리 목록 렌더링
 window.renderAdminManageList = function() {
   const container = document.getElementById('adminManageList');
   if (!container) return;
@@ -74,7 +124,7 @@ window.renderAdminManageList = function() {
     window.customVideoData.forEach(v => {
       html += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:#f9f9f9; border-radius:6px; border:1px solid #ddd;">
-          <span><b>[${v.era}] ${v.title}</b> (URL: ${v.videoUrl})</span>
+          <span><b>[${v.era}] ${v.title}</b></span>
           <button onclick="window.deleteVideo(${v.id})" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">영상 삭제</button>
         </div>
       `;
