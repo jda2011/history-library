@@ -329,3 +329,186 @@ if (registerForm) {
     };
   }
 });
+
+// LocalStorage를 활용해 영상과 퀴즈를 지속 관리 (기본 데이터 초기화)
+let customVideoData = JSON.parse(localStorage.getItem('custom_video_data')) || [
+  { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선 성립', desc: '한반도 최초의 국가 고조선의 건국과 8조법을 살펴봅니다.', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 2, era: 'medieval', title: '[중세] 고려의 창건과 왕건', desc: '후삼국을 통일하고 고려를 건국한 태조 왕건의 정책을 공부합니다.', youtubeId: 'dQw4w9WgXcQ' }
+];
+
+let customQuizData = JSON.parse(localStorage.getItem('custom_quiz_data')) || [];
+
+// 1. 화면 전환 함수에 adminSection 처리 추가
+window.showSection = function(sectionId) {
+  if (homeSection) homeSection.style.display = 'none';
+  if (myRoomSection) myRoomSection.style.display = 'none';
+  if (registerSection) registerSection.style.display = 'none';
+  if (loginSection) loginSection.style.display = 'none';
+  
+  const adminSec = document.getElementById('adminSection');
+  if (adminSec) adminSec.style.display = 'none';
+
+  const targetSection = document.getElementById(sectionId);
+  if (targetSection) targetSection.style.display = 'block';
+};
+
+// 2. 권한에 따른 관리자 전용 UI 노출
+function updateAuthState(user) {
+  currentUser = user;
+  const adminBadge = document.getElementById('adminBadge');
+  const navAdminBtn = document.getElementById('navAdminBtn');
+
+  if (user) {
+    const username = user.user_metadata?.username || user.email?.split('@')[0] || '사용자';
+    const userRole = user.user_metadata?.role || (username === 'jj' ? 'admin' : 'user');
+
+    if (guestNav) guestNav.style.display = 'none';
+    if (userNav) userNav.style.display = 'flex';
+
+    if (userRole === 'admin') {
+      if (adminBadge) adminBadge.style.display = 'inline-block';
+      if (navAdminBtn) navAdminBtn.style.display = 'inline-block';
+    } else {
+      if (adminBadge) adminBadge.style.display = 'none';
+      if (navAdminBtn) navAdminBtn.style.display = 'none';
+    }
+  } else {
+    if (guestNav) guestNav.style.display = 'flex';
+    if (userNav) userNav.style.display = 'none';
+    if (adminBadge) adminBadge.style.display = 'none';
+    if (navAdminBtn) navAdminBtn.style.display = 'none';
+  }
+}
+
+// 3. 관리자 센터 이벤트 연동
+document.addEventListener('DOMContentLoaded', () => {
+  const navAdminBtn = document.getElementById('navAdminBtn');
+  if (navAdminBtn) {
+    navAdminBtn.onclick = () => {
+      window.showSection('adminSection');
+      renderAdminManageList();
+      populateQuizVideoSelect();
+    };
+  }
+
+  // 영상 등록 처리
+  const adminAddVideoForm = document.getElementById('adminAddVideoForm');
+  if (adminAddVideoForm) {
+    adminAddVideoForm.onsubmit = (e) => {
+      e.preventDefault();
+      const newVideo = {
+        id: Date.now(),
+        era: document.getElementById('adminVideoEra').value,
+        title: document.getElementById('adminVideoTitle').value.trim(),
+        youtubeId: document.getElementById('adminVideoYoutubeId').value.trim(),
+        desc: document.getElementById('adminVideoDesc').value.trim()
+      };
+
+      customVideoData.push(newVideo);
+      localStorage.setItem('custom_video_data', JSON.stringify(customVideoData));
+      alert('영상이 새로 등록되었습니다!');
+      adminAddVideoForm.reset();
+      renderVideos('all');
+      renderAdminManageList();
+      populateQuizVideoSelect();
+    };
+  }
+
+  // 퀴즈 등록 처리
+  const adminAddQuizForm = document.getElementById('adminAddQuizForm');
+  if (adminAddQuizForm) {
+    adminAddQuizForm.onsubmit = (e) => {
+      e.preventDefault();
+      const newQuiz = {
+        id: Date.now(),
+        videoId: Number(document.getElementById('adminQuizVideoSelect').value),
+        question: document.getElementById('adminQuizQuestion').value.trim(),
+        options: [
+          document.getElementById('adminQuizOpt1').value.trim(),
+          document.getElementById('adminQuizOpt2').value.trim(),
+          document.getElementById('adminQuizOpt3').value.trim(),
+          document.getElementById('adminQuizOpt4').value.trim()
+        ],
+        answer: Number(document.getElementById('adminQuizAnswer').value)
+      };
+
+      customQuizData.push(newQuiz);
+      localStorage.setItem('custom_quiz_data', JSON.stringify(customQuizData));
+      alert('퀴즈(문제)가 등록되었습니다!');
+      adminAddQuizForm.reset();
+      renderAdminManageList();
+    };
+  }
+});
+
+// 관리자 삭제용 목록 동적 생성
+function renderAdminManageList() {
+  const container = document.getElementById('adminManageList');
+  if (!container) return;
+
+  container.innerHTML = '<h4>[등록된 영상 목록]</h4>';
+
+  if (customVideoData.length === 0) {
+    container.innerHTML += '<p style="color:#888;">등록된 영상이 없습니다.</p>';
+  } else {
+    customVideoData.forEach(v => {
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 8px; border-bottom: 1px solid #eee;';
+      item.innerHTML = `
+        <span><b>${v.title}</b> (${v.era})</span>
+        <button onclick="deleteVideo(${v.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">영상 삭제</button>
+      `;
+      container.appendChild(item);
+    });
+  }
+
+  container.innerHTML += '<h4 style="margin-top:20px;">[등록된 퀴즈 목록]</h4>';
+  if (customQuizData.length === 0) {
+    container.innerHTML += '<p style="color:#888;">등록된 퀴즈가 없습니다.</p>';
+  } else {
+    customQuizData.forEach(q => {
+      const item = document.createElement('div');
+      item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 8px; border-bottom: 1px solid #eee;';
+      item.innerHTML = `
+        <span><b>Q: ${q.question}</b> (정답: ${q.answer}번)</span>
+        <button onclick="deleteQuiz(${q.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">퀴즈 삭제</button>
+      `;
+      container.appendChild(item);
+    });
+  }
+}
+
+// 영상 삭제 함수
+window.deleteVideo = function(videoId) {
+  if (confirm('이 영상을 삭제하시겠습니까? 관련 퀴즈도 함께 삭제될 수 있습니다.')) {
+    customVideoData = customVideoData.filter(v => v.id !== videoId);
+    customQuizData = customQuizData.filter(q => q.videoId !== videoId);
+    localStorage.setItem('custom_video_data', JSON.stringify(customVideoData));
+    localStorage.setItem('custom_quiz_data', JSON.stringify(customQuizData));
+    renderVideos('all');
+    renderAdminManageList();
+    populateQuizVideoSelect();
+  }
+};
+
+// 퀴즈 삭제 함수
+window.deleteQuiz = function(quizId) {
+  if (confirm('이 퀴즈를 삭제하시겠습니까?')) {
+    customQuizData = customQuizData.filter(q => q.id !== quizId);
+    localStorage.setItem('custom_quiz_data', JSON.stringify(customQuizData));
+    renderAdminManageList();
+  }
+};
+
+// 퀴즈 생성 시 영상 선택 드롭다운 갱신
+function populateQuizVideoSelect() {
+  const select = document.getElementById('adminQuizVideoSelect');
+  if (!select) return;
+  select.innerHTML = '';
+  customVideoData.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.title;
+    select.appendChild(opt);
+  });
+}
