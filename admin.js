@@ -26,10 +26,15 @@
     .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
     .stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
 
-    /* 폼 및 카드 레이아웃 */
+    /* 폼 레이아웃 정돈 */
     .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; }
+    .form-group input[type="text"], 
+    .form-group input[type="password"], 
+    .form-group input[type="email"], 
+    .form-group select, 
+    .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .form-group input[type="file"] { padding: 8px; background: #fff; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
     .pw-input-wrapper { display: flex; gap: 5px; }
 
     .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
@@ -84,14 +89,14 @@
     </div>
   </section>
 
-  <!-- 관리자 방 -->
+  <!-- 관리자 방 (제작 영상 업로드 폼 포함) -->
   <section id="adminSection" style="display:none;">
     <h2>🛠️ 관리자 센터 (영상 게시 및 문제 관리)</h2>
     <hr style="margin: 15px 0;">
 
-    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+    <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
       <h3>📺 제작 영상 게시 및 업로드</h3>
-      <form id="adminAddVideoForm" style="margin-top:10px;">
+      <form id="adminAddVideoForm" style="margin-top:15px;">
         <div class="form-group">
           <label>시대 구분</label>
           <select id="adminVideoEra">
@@ -109,20 +114,20 @@
         <div class="form-group">
           <label>영상 파일 업로드 (.mp4, .webm)</label>
           <input type="file" id="adminVideoFileInput" accept="video/mp4, video/webm" required>
-          <p id="uploadProgressText" style="font-size:12px; color:#3b82f6; margin-top:4px; display:none;">영상을 업로드 중입니다. 잠시만 기다려 주세요...</p>
+          <p id="uploadProgressText" style="font-size:12px; color:#3b82f6; margin-top:6px; display:none;">영상을 업로드 중입니다. 잠시만 기다려 주세요...</p>
         </div>
 
         <div class="form-group">
           <label>영상 설명</label>
-          <textarea id="adminVideoDesc" rows="2" required></textarea>
+          <textarea id="adminVideoDesc" rows="3" placeholder="영상 설명을 입력하세요..." required></textarea>
         </div>
-        <button type="submit" class="btn-primary" id="adminVideoSubmitBtn">영상 게시 및 업로드</button>
+        <button type="submit" class="btn-primary" id="adminVideoSubmitBtn" style="padding:10px 20px;">영상 게시 및 업로드</button>
       </form>
     </div>
 
-    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+    <div style="background:#f8fafc; padding:20px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:20px;">
       <h3>❓ 문제(퀴즈) 게시</h3>
-      <form id="adminAddQuizForm" style="margin-top:10px;">
+      <form id="adminAddQuizForm" style="margin-top:15px;">
         <div class="form-group">
           <label>연결할 영상</label>
           <select id="adminQuizVideoSelect" required></select>
@@ -130,73 +135,4 @@
         <div class="form-group"><label>퀴즈 질문</label><input type="text" id="adminQuizQuestion" required></div>
         <div class="form-group"><label>보기 1</label><input type="text" id="adminQuizOpt1" required></div>
         <div class="form-group"><label>보기 2</label><input type="text" id="adminQuizOpt2" required></div>
-        <div class="form-group"><label>보기 3</label><input type="text" id="adminQuizOpt3" required></div>
-        <div class="form-group"><label>보기 4</label><input type="text" id="adminQuizOpt4" required></div>
-        <div class="form-group">
-          <label>정답 번호</label>
-          <select id="adminQuizAnswer">
-            <option value="1">1번</option><option value="2">2번</option>
-            <option value="3">3번</option><option value="4">4번</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-admin">문제 게시</button>
-      </form>
-    </div>
-
-    <h3>📂 등록된 콘텐츠 및 삭제 관리</h3>
-    <div id="adminManageList" style="margin-top:10px;"></div>
-  </section>
-
-  <!-- 로그인 화면 -->
-  <section id="loginSection" style="display:none; max-width:400px;">
-    <h2>로그인</h2>
-    <form id="loginForm" style="margin-top:15px;">
-      <div class="form-group">
-        <label>아이디 또는 이메일</label>
-        <input type="text" id="loginUsername" placeholder="아이디 입력" required>
-      </div>
-      <div class="form-group">
-        <label>비밀번호</label>
-        <div class="pw-input-wrapper">
-          <input type="password" id="loginPw" required>
-          <button type="button" id="toggleLoginPwBtn">보임</button>
-        </div>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">로그인</button>
-    </form>
-  </section>
-
-  <!-- 회원가입 화면 -->
-  <section id="registerSection" style="display:none; max-width:400px;">
-    <h2>회원가입</h2>
-    <form id="registerForm" style="margin-top:15px;">
-      <div class="form-group"><label>아이디</label><input type="text" id="regUsername" required></div>
-      <div class="form-group"><label>이메일</label><input type="email" id="regEmail" required></div>
-      <div class="form-group">
-        <label>비밀번호</label>
-        <div class="pw-input-wrapper">
-          <input type="password" id="regPw" required>
-          <button type="button" id="togglePwBtn">보임</button>
-        </div>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">가입하기</button>
-    </form>
-  </section>
-
-  <!-- 영상 재생 팝업 모달 -->
-  <div id="videoModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
-      <h3 id="modalVideoTitle" style="margin-bottom:10px;">영상 제목</h3>
-      <video id="modalVideoPlayer" controls style="width:100%; max-height:400px; background:#000; border-radius:8px; display:none;"></video>
-      <iframe id="modalIframePlayer" style="width:100%; height:380px; border:none; border-radius:8px; display:none;"></iframe>
-      <p id="modalVideoDesc" style="margin-top:10px; color:#555;"></p>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js"></script>
-  <script src="admin.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+        <div class="form-group"><label>보기 3</label><input type="text" id="adminQuiz
