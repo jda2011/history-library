@@ -81,37 +81,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 로그인 상태 확인 및 UI 반영
-  async function checkAuthState() {
-    let user = null;
+  // 로그인 상태 확인 및 UI 반영 함수
+async function checkAuthState() {
+  let user = null;
 
-    try {
-      if (typeof supabaseClient !== 'undefined') {
-        const { data } = await supabaseClient.auth.getUser();
-        user = data?.user;
-      }
-    } catch (err) {
-      console.warn('사용자 인증 확인 실패:', err);
+  try {
+    if (typeof supabaseClient !== 'undefined') {
+      const { data } = await supabaseClient.auth.getUser();
+      user = data?.user;
     }
-
-    if (user) {
-      if (navs.guest) navs.guest.style.display = 'none';
-      if (navs.user) navs.user.style.display = 'flex';
-
-      const nicknameDisplay = document.getElementById('userNicknameDisplay');
-      if (nicknameDisplay) {
-        nicknameDisplay.textContent = user.user_metadata?.nickname || user.email.split('@')[0];
-      }
-
-      if (btns.admin) {
-        btns.admin.style.display = 'inline-block';
-      }
-    } else {
-      if (navs.guest) navs.guest.style.display = 'flex';
-      if (navs.user) navs.user.style.display = 'none';
-    }
+  } catch (err) {
+    console.warn('사용자 인증 확인 실패:', err);
   }
 
+  if (user) {
+    if (navs.guest) navs.guest.style.display = 'none';
+    if (navs.user) navs.user.style.display = 'flex';
+
+    const nicknameDisplay = document.getElementById('userNicknameDisplay');
+    if (nicknameDisplay) {
+      nicknameDisplay.textContent = user.user_metadata?.nickname || user.email.split('@')[0];
+    }
+
+    // 💡 관리자 이메일 설정 (원하는 관리자 이메일 주소를 입력하세요)
+    const ADMIN_EMAIL = 'admin@email.com'; // 👈 본인의 관리자 이메일로 변경하세요!
+
+    if (btns.admin) {
+      if (user.email === ADMIN_EMAIL) {
+        btns.admin.style.display = 'inline-block'; // 관리자일 때만 보임
+      } else {
+        btns.admin.style.display = 'none'; // 일반 유저에게는 안 보임
+      }
+    }
+  } else {
+    if (navs.guest) navs.guest.style.display = 'flex';
+    if (navs.user) navs.user.style.display = 'none';
+  }
+}
   // 로그인 폼 제출 처리
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
