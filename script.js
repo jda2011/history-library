@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // DOM 요소 참조
   const navHomeBtn = document.getElementById('navHomeBtn');
   const navLoginBtn = document.getElementById('navLoginBtn');
   const navRegisterBtn = document.getElementById('navRegisterBtn');
@@ -17,9 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerForm = document.getElementById('registerForm');
   const loginForm = document.getElementById('loginForm');
 
+  // 👁️ 비밀번호 보임/숨김 토글 요소
+  const togglePwBtn = document.getElementById('togglePwBtn');
+  const regPwInput = document.getElementById('regPw');
+  const toggleLoginPwBtn = document.getElementById('toggleLoginPwBtn');
+  const loginPwInput = document.getElementById('loginPw');
+
+  // 모달 요소
+  const videoModal = document.getElementById('videoModal');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
   let currentUser = null;
 
-  // 화면 전환 함수
+  // 1. 화면 전환 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (myRoomSection) myRoomSection.style.display = 'none';
@@ -31,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target) target.style.display = 'block';
   };
 
-  // 로그인 상태 반영
+  // 2. 로그인 상태 UI 업데이트
   function updateAuthState(user) {
     currentUser = user;
     const adminBadge = document.getElementById('adminBadge');
@@ -44,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (guestNav) guestNav.style.display = 'none';
       if (userNav) userNav.style.display = 'flex';
 
+      // 관리자 UI 표시
       if (userRole === 'admin') {
         if (adminBadge) adminBadge.style.display = 'inline-block';
         if (navAdminBtn) navAdminBtn.style.display = 'inline-block';
@@ -52,8 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navAdminBtn) navAdminBtn.style.display = 'none';
       }
 
+      // 내정보 UI 반영
       const userNicknameDisplay = document.getElementById('userNicknameDisplay');
+      const myRoomUsername = document.getElementById('myRoomUsername');
+      const myEmail = document.getElementById('myEmail');
+      const myNickname = document.getElementById('myNickname');
+
       if (userNicknameDisplay) userNicknameDisplay.textContent = username;
+      if (myRoomUsername) myRoomUsername.textContent = username;
+      if (myEmail) myEmail.textContent = user.email || '-';
+      if (myNickname) myNickname.textContent = username;
     } else {
       if (guestNav) guestNav.style.display = 'flex';
       if (userNav) userNav.style.display = 'none';
@@ -62,18 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 로그인 상태 확인
+  // 3. Supabase 세션 체크
   if (typeof supabaseClient !== 'undefined' && supabaseClient) {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       updateAuthState(session ? session.user : null);
     }).catch(() => updateAuthState(null));
   }
 
+  // 4. 네비게이션 버튼 이벤트
   if (navHomeBtn) navHomeBtn.onclick = () => window.showSection('homeSection');
   if (navLoginBtn) navLoginBtn.onclick = () => window.showSection('loginSection');
   if (navRegisterBtn) navRegisterBtn.onclick = () => window.showSection('registerSection');
   if (navMyRoomBtn) navMyRoomBtn.onclick = () => window.showSection('myRoomSection');
 
+  // 로그아웃
   if (navLogoutBtn) {
     navLogoutBtn.onclick = async () => {
       if (typeof supabaseClient !== 'undefined' && supabaseClient) {
@@ -85,7 +107,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 영상 목록 출력
+  // 5. 👁️ 비밀번호 보임/숨김 토글 기능 복원
+  if (togglePwBtn && regPwInput) {
+    togglePwBtn.onclick = () => {
+      regPwInput.type = regPwInput.type === 'password' ? 'text' : 'password';
+      togglePwBtn.textContent = regPwInput.type === 'password' ? '보임' : '숨김';
+    };
+  }
+
+  if (toggleLoginPwBtn && loginPwInput) {
+    toggleLoginPwBtn.onclick = () => {
+      loginPwInput.type = loginPwInput.type === 'password' ? 'text' : 'password';
+      toggleLoginPwBtn.textContent = loginPwInput.type === 'password' ? '보임' : '숨김';
+    };
+  }
+
+  // 6. 📺 영상 목록 렌더링
   window.renderVideos = function(eraFilter = 'all') {
     const videoList = document.getElementById('videoList');
     if (!videoList) return;
@@ -112,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const modalVideoTitle = document.getElementById('modalVideoTitle');
         const modalVideoDesc = document.getElementById('modalVideoDesc');
         const modalVideoPlayer = document.getElementById('modalVideoPlayer');
-        const videoModal = document.getElementById('videoModal');
 
         if (modalVideoTitle) modalVideoTitle.textContent = video.title;
         if (modalVideoDesc) modalVideoDesc.textContent = video.desc;
@@ -124,9 +160,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  // 7. 시대별 탭 필터링 이벤트 복원
+  const eraButtons = document.querySelectorAll('.era-btn');
+  eraButtons.forEach(btn => {
+    btn.onclick = (e) => {
+      eraButtons.forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      window.renderVideos(e.currentTarget.dataset.era);
+    };
+  });
+
+  // 8. 모달 닫기 복원
+  if (closeModalBtn) {
+    closeModalBtn.onclick = () => {
+      if (videoModal) videoModal.style.display = 'none';
+      const modalVideoPlayer = document.getElementById('modalVideoPlayer');
+      if (modalVideoPlayer) modalVideoPlayer.src = '';
+    };
+  }
+
   window.renderVideos('all');
 
-  // 회원가입
+  // 9. 회원가입 처리
   if (registerForm) {
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -167,13 +222,13 @@ document.addEventListener('DOMContentLoaded', () => {
         userMap[username] = email;
         localStorage.setItem('user_map', JSON.stringify(userMap));
 
-        alert(`${username}님, 회원가입 성공!`);
+        alert(`${username}님, 회원가입 성공!${isAdminAccount ? ' (관리자 권한이 부여되었습니다)' : ''}`);
         window.showSection('loginSection');
       }
     };
   }
 
-  // 로그인 (async 올바르게 부여됨)
+  // 10. 로그인 처리
   if (loginForm) {
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
@@ -186,12 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // 저장된 이메일 찾기
       const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
       let targetEmail = userMap[inputVal] || inputVal;
-
-      if (!targetEmail.includes('@')) {
-        targetEmail = `${inputVal}@library.com`;
-      }
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email: targetEmail,
@@ -199,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (error) {
-        alert('로그인 실패: 아이디 또는 비밀번호가 올바르지 않습니다.');
+        alert('로그인 실패: 아이디(이메일) 또는 비밀번호가 올바르지 않습니다.');
       } else {
         updateAuthState(data.user);
         const displayName = data.user.user_metadata?.username || inputVal;
