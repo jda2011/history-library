@@ -1,181 +1,202 @@
-window.customVideoData = JSON.parse(localStorage.getItem('custom_video_data')) || [
-  { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선', desc: '직접 제작한 고대사 영상입니다.', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' }
-];
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>역사 동영상 도서관</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #fdfbf7; color: #333; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #fff0f3; border-bottom: 2px solid #ffccd5; }
+    header h1 { font-size: 22px; color: #d63384; cursor: pointer; }
+    nav { display: flex; gap: 10px; align-items: center; }
+    
+    button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; transition: 0.2s; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-admin { background: #8b5cf6; color: white; }
 
-window.customQuizData = JSON.parse(localStorage.getItem('custom_quiz_data')) || [];
+    section { max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const adminAddVideoForm = document.getElementById('adminAddVideoForm');
-  
-  if (adminAddVideoForm) {
-    adminAddVideoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    /* 마이페이지 스타일 */
+    .profile-card { background: #e0f2fe; padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .avatar { width: 60px; height: 60px; background: #0284c7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+    .stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
+    .stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
 
-      const submitBtn = document.getElementById('adminVideoSubmitBtn');
-      const progressText = document.getElementById('uploadProgressText');
-      const fileInput = document.getElementById('adminVideoFileInput');
-      const file = fileInput.files[0];
+    /* 폼 및 카드 레이아웃 */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .pw-input-wrapper { display: flex; gap: 5px; }
 
-      if (!file) {
-        alert('업로드할 영상 파일을 선택해 주세요.');
-        return;
-      }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .video-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; background: #fff; transition: transform 0.2s; }
+    .video-card:hover { transform: translateY(-4px); }
+    .video-thumbnail { height: 120px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 6px; }
 
-      try {
-        // 버튼 비활성화 및 안내 문구
-        submitBtn.disabled = true;
-        progressText.style.display = 'block';
+    /* 영상 시청 모달 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 20px; border-radius: 12px; max-width: 700px; width: 90%; position: relative; }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+  </style>
+</head>
+<body>
 
-        // 파일명 중복 방지를 위한 고유 파일명 생성
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-        const filePath = `uploaded/${fileName}`;
+  <header>
+    <h1 id="navHomeBtn">📜 역사 동영상 도서관</h1>
+    <nav id="guestNav">
+      <button class="btn-primary" id="navLoginBtn">로그인</button>
+      <button class="btn-primary" id="navRegisterBtn" style="background:#10b981;">회원가입</button>
+    </nav>
+    <nav id="userNav" style="display:none;">
+      <span id="adminBadge" style="display:none; background:#8b5cf6; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">관리자 계정</span>
+      <button class="btn-primary" id="navMyRoomBtn">👤 <span id="userNicknameDisplay"></span>님의 방</button>
+      <button class="btn-admin" id="navAdminBtn" style="display:none;">🛠️ 관리자 방</button>
+      <button class="btn-danger" id="navLogoutBtn">로그아웃</button>
+    </nav>
+  </header>
 
-        // Supabase Storage에 파일 업로드
-        const { data: uploadData, error: uploadError } = await supabaseClient
-          .storage
-          .from('videos')
-          .upload(filePath, file);
+  <!-- 메인 시청 영역 -->
+  <section id="homeSection">
+    <h2>🎬 역사 동영상 시청하기</h2>
+    <p style="color:#666; margin-top:5px;">원하는 시대를 선택하여 영상을 시청해보세요.</p>
+    <div class="video-grid" id="videoList"></div>
+  </section>
 
-        if (uploadError) {
-          throw new Error('Storage 업로드 실패: ' + uploadError.message);
-        }
+  <!-- 개인 방 (마이페이지) -->
+  <section id="myRoomSection" style="display:none;">
+    <div class="profile-card">
+      <div class="avatar">👤</div>
+      <div>
+        <h2 id="myRoomUsername">사용자</h2>
+        <p style="color:#666; font-size:14px;" id="myEmail">-</p>
+      </div>
+    </div>
 
-        // 업로드된 파일의 Public URL 가져오기
-        const { data: urlData } = supabaseClient
-          .storage
-          .from('videos')
-          .getPublicUrl(filePath);
+    <h3>📊 나의 학습 현황</h3>
+    <div class="stats-grid">
+      <div class="stat-box">시청한 강좌<strong id="myWatchCount">0개</strong></div>
+      <div class="stat-box">풀었던 퀴즈<strong id="myQuizCount">0개</strong></div>
+      <div class="stat-box">획득한 포인트<strong id="myPoints">0 PT</strong></div>
+    </div>
+  </section>
 
-        const uploadedVideoUrl = urlData.publicUrl;
+  <!-- 관리자 방 -->
+  <section id="adminSection" style="display:none;">
+    <h2>🛠️ 관리자 센터 (영상 게시 및 문제 관리)</h2>
+    <hr style="margin: 15px 0;">
 
-        // 영상 데이터 객체 생성
-        const newVideo = {
-          id: Date.now(),
-          era: document.getElementById('adminVideoEra').value,
-          title: document.getElementById('adminVideoTitle').value.trim(),
-          videoUrl: uploadedVideoUrl,
-          desc: document.getElementById('adminVideoDesc').value.trim()
-        };
-
-        // 데이터 저장
-        window.customVideoData.push(newVideo);
-        localStorage.setItem('custom_video_data', JSON.stringify(window.customVideoData));
-
-        alert('영상 파일이 성공적으로 업로드 및 게시되었습니다!');
-        adminAddVideoForm.reset();
-
-        // 목록 리프레시
-        if (typeof window.renderVideos === 'function') window.renderVideos();
-        window.renderAdminManageList();
-        window.populateQuizVideoSelect();
-
-      } catch (err) {
-        alert('오류 발생: ' + err.message);
-      } finally {
-        submitBtn.disabled = false;
-        progressText.style.display = 'none';
-      }
-    });
-  }
-
-  // 퀴즈 게시
-  const adminAddQuizForm = document.getElementById('adminAddQuizForm');
-  if (adminAddQuizForm) {
-    adminAddQuizForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const videoSelect = document.getElementById('adminQuizVideoSelect');
-      if (!videoSelect || !videoSelect.value) {
-        alert('퀴즈를 연결할 영상을 먼저 선택해 주세요.');
-        return;
-      }
-
-      const newQuiz = {
-        id: Date.now(),
-        videoId: Number(videoSelect.value),
-        question: document.getElementById('adminQuizQuestion').value.trim(),
-        options: [
-          document.getElementById('adminQuizOpt1').value.trim(),
-          document.getElementById('adminQuizOpt2').value.trim(),
-          document.getElementById('adminQuizOpt3').value.trim(),
-          document.getElementById('adminQuizOpt4').value.trim()
-        ],
-        answer: Number(document.getElementById('adminQuizAnswer').value)
-      };
-
-      window.customQuizData.push(newQuiz);
-      localStorage.setItem('custom_quiz_data', JSON.stringify(window.customQuizData));
-      alert('새로운 퀴즈가 성공적으로 게시되었습니다!');
-      adminAddQuizForm.reset();
-      window.renderAdminManageList();
-    });
-  }
-});
-
-// 관리 목록 렌더링
-window.renderAdminManageList = function() {
-  const container = document.getElementById('adminManageList');
-  if (!container) return;
-
-  let html = '<h4 style="margin-bottom:8px;">📂 게시된 직접 제작 영상 목록</h4>';
-  if (window.customVideoData.length === 0) {
-    html += '<p style="color:#888;">등록된 영상이 없습니다.</p>';
-  } else {
-    window.customVideoData.forEach(v => {
-      html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:#f9f9f9; border-radius:6px; border:1px solid #ddd;">
-          <span><b>[${v.era}] ${v.title}</b></span>
-          <button onclick="window.deleteVideo(${v.id})" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">영상 삭제</button>
+    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+      <h3>📺 제작 영상 게시 및 업로드</h3>
+      <form id="adminAddVideoForm" style="margin-top:10px;">
+        <div class="form-group">
+          <label>시대 구분</label>
+          <select id="adminVideoEra">
+            <option value="ancient">고대</option>
+            <option value="medieval">중세</option>
+            <option value="modern">근대</option>
+            <option value="contemporary">현대</option>
+          </select>
         </div>
-      `;
-    });
-  }
-
-  html += '<h4 style="margin-top:20px; margin-bottom:8px;">❓ 게시된 퀴즈 목록</h4>';
-  if (window.customQuizData.length === 0) {
-    html += '<p style="color:#888;">등록된 퀴즈가 없습니다.</p>';
-  } else {
-    window.customQuizData.forEach(q => {
-      html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; margin-bottom:8px; background:#f9f9f9; border-radius:6px; border:1px solid #ddd;">
-          <span><b>Q: ${q.question}</b> (정답: ${q.answer}번)</span>
-          <button onclick="window.deleteQuiz(${q.id})" style="background:#e74c3c; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">퀴즈 삭제</button>
+        <div class="form-group">
+          <label>영상 제목</label>
+          <input type="text" id="adminVideoTitle" placeholder="예: [고대] 고구려의 발전" required>
         </div>
-      `;
-    });
-  }
+        
+        <div class="form-group">
+          <label>영상 파일 업로드 (.mp4, .webm)</label>
+          <input type="file" id="adminVideoFileInput" accept="video/mp4, video/webm" required>
+          <p id="uploadProgressText" style="font-size:12px; color:#3b82f6; margin-top:4px; display:none;">영상을 업로드 중입니다. 잠시만 기다려 주세요...</p>
+        </div>
 
-  container.innerHTML = html;
-};
+        <div class="form-group">
+          <label>영상 설명</label>
+          <textarea id="adminVideoDesc" rows="2" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary" id="adminVideoSubmitBtn">영상 게시 및 업로드</button>
+      </form>
+    </div>
 
-window.deleteVideo = function(videoId) {
-  if (confirm('해당 영상을 삭제하시겠습니까?')) {
-    window.customVideoData = window.customVideoData.filter(v => v.id !== videoId);
-    window.customQuizData = window.customQuizData.filter(q => q.videoId !== videoId);
-    localStorage.setItem('custom_video_data', JSON.stringify(window.customVideoData));
-    localStorage.setItem('custom_quiz_data', JSON.stringify(window.customQuizData));
-    if (typeof window.renderVideos === 'function') window.renderVideos();
-    window.renderAdminManageList();
-    window.populateQuizVideoSelect();
-  }
-};
+    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+      <h3>❓ 문제(퀴즈) 게시</h3>
+      <form id="adminAddQuizForm" style="margin-top:10px;">
+        <div class="form-group">
+          <label>연결할 영상</label>
+          <select id="adminQuizVideoSelect" required></select>
+        </div>
+        <div class="form-group"><label>퀴즈 질문</label><input type="text" id="adminQuizQuestion" required></div>
+        <div class="form-group"><label>보기 1</label><input type="text" id="adminQuizOpt1" required></div>
+        <div class="form-group"><label>보기 2</label><input type="text" id="adminQuizOpt2" required></div>
+        <div class="form-group"><label>보기 3</label><input type="text" id="adminQuizOpt3" required></div>
+        <div class="form-group"><label>보기 4</label><input type="text" id="adminQuizOpt4" required></div>
+        <div class="form-group">
+          <label>정답 번호</label>
+          <select id="adminQuizAnswer">
+            <option value="1">1번</option><option value="2">2번</option>
+            <option value="3">3번</option><option value="4">4번</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-admin">문제 게시</button>
+      </form>
+    </div>
 
-window.deleteQuiz = function(quizId) {
-  if (confirm('해당 퀴즈를 삭제하시겠습니까?')) {
-    window.customQuizData = window.customQuizData.filter(q => q.id !== quizId);
-    localStorage.setItem('custom_quiz_data', JSON.stringify(window.customQuizData));
-    window.renderAdminManageList();
-  }
-};
+    <h3>📂 등록된 콘텐츠 및 삭제 관리</h3>
+    <div id="adminManageList" style="margin-top:10px;"></div>
+  </section>
 
-window.populateQuizVideoSelect = function() {
-  const select = document.getElementById('adminQuizVideoSelect');
-  if (!select) return;
-  select.innerHTML = '<option value="">영상을 선택하세요</option>';
-  window.customVideoData.forEach(v => {
-    const opt = document.createElement('option');
-    opt.value = v.id;
-    opt.textContent = v.title;
-    select.appendChild(opt);
-  });
-};
+  <!-- 로그인 화면 -->
+  <section id="loginSection" style="display:none; max-width:400px;">
+    <h2>로그인</h2>
+    <form id="loginForm" style="margin-top:15px;">
+      <div class="form-group">
+        <label>아이디 또는 이메일</label>
+        <input type="text" id="loginUsername" placeholder="아이디 입력" required>
+      </div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="pw-input-wrapper">
+          <input type="password" id="loginPw" required>
+          <button type="button" id="toggleLoginPwBtn">보임</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">로그인</button>
+    </form>
+  </section>
+
+  <!-- 회원가입 화면 -->
+  <section id="registerSection" style="display:none; max-width:400px;">
+    <h2>회원가입</h2>
+    <form id="registerForm" style="margin-top:15px;">
+      <div class="form-group"><label>아이디</label><input type="text" id="regUsername" required></div>
+      <div class="form-group"><label>이메일</label><input type="email" id="regEmail" required></div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="pw-input-wrapper">
+          <input type="password" id="regPw" required>
+          <button type="button" id="togglePwBtn">보임</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">가입하기</button>
+    </form>
+  </section>
+
+  <!-- 영상 재생 팝업 모달 -->
+  <div id="videoModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h3 id="modalVideoTitle" style="margin-bottom:10px;">영상 제목</h3>
+      <video id="modalVideoPlayer" controls style="width:100%; max-height:400px; background:#000; border-radius:8px; display:none;"></video>
+      <iframe id="modalIframePlayer" style="width:100%; height:380px; border:none; border-radius:8px; display:none;"></iframe>
+      <p id="modalVideoDesc" style="margin-top:10px; color:#555;"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
