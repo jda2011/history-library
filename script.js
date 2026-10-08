@@ -1,20 +1,17 @@
 // Supabase 설정
 let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co';
-
-// ⚠️ 아래 ' ' 안에 Supabase 발급 키를 그대로 넣으셔야 합니다.
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
 SUPABASE_URL = SUPABASE_URL.replace(/\/+$|\/auth\/v1.*$/g, '');
 
 let supabaseClient = null;
 try {
-  if (window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc') {
+  if (window.supabase && SUPABASE_ANON_KEY) {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch (e) {
-  console.warn("Supabase 클라이언트 초기화 중 문제 발생:", e);
+  console.warn("Supabase 클라이언트 초기화 실패:", e);
 }
-
 // 시대별 영상 데이터
 const videoData = [
   { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선 성립', desc: '한반도 최초의 국가 고조선의 건국과 8조법을 살펴봅니다.', youtubeId: 'dQw4w9WgXcQ' },
