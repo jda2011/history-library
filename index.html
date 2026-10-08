@@ -28,28 +28,24 @@
 
   <!-- 메인 콘텐츠 영역 -->
   <main class="container">
-    <!-- 1. 홈 화면 (동영상 목록) -->
+    <!-- 1. 홈 화면 (시대별 부록 및 동영상 목록) -->
     <div id="homeSection" class="section">
       <h1>🎬 역사 동영상 시청하기</h1>
       <p id="welcomeMsg">로그인 후 다양한 역사 동영상을 시청해보세요!</p>
+
+      <!-- 시대별 부록 카테고리 탭 -->
+      <div class="era-tabs">
+        <button class="era-btn active" data-era="all">전체</button>
+        <button class="era-btn" data-era="ancient">🏛️ 고대</button>
+        <button class="era-btn" data-era="medieval">⚔️ 중세</button>
+        <button class="era-btn" data-era="early-modern">📜 근세</button>
+        <button class="era-btn" data-era="modern">🚂 근대</button>
+        <button class="era-btn" data-era="contemporary">🏙️ 현대</button>
+      </div>
       
-      <!-- 영상 목록 플레이스홀더 -->
+      <!-- 영상 목록 -->
       <div class="video-grid" id="videoList">
-        <div class="video-card">
-          <div class="video-thumbnail">📺</div>
-          <h3>[조선] 세종대왕과 한글 창제</h3>
-          <p>훈민정음 창제 과정과 역사적 의의를 알아봅니다.</p>
-        </div>
-        <div class="video-card">
-          <div class="video-thumbnail">📜</div>
-          <h3>[삼국] 광개토대왕의 영토 확장</h3>
-          <p>고구려 전성기를 이끈 광개토대왕의 정벌기.</p>
-        </div>
-        <div class="video-card">
-          <div class="video-thumbnail">🏺</div>
-          <h3>[고려] 대몽항쟁과 팔만대장경</h3>
-          <p>몽골의 침입에 맞선 고려 백성들의 기록.</p>
-        </div>
+        <!-- JS에서 동적으로 카드가 생성됩니다 -->
       </div>
     </div>
 
@@ -57,9 +53,9 @@
     <div id="myRoomSection" class="section" style="display: none;">
       <h2>👤 <span id="myRoomUsername"></span>님의 개인 방</h2>
       <div class="my-info-card">
+        <p><strong>아이디:</strong> <span id="myNickname"></span></p>
         <p><strong>이메일:</strong> <span id="myEmail"></span></p>
-        <p><strong>아이디(닉네임):</strong> <span id="myNickname"></span></p>
-        <p><strong>시청한 영상:</strong> 0개</p>
+        <p><strong>시청 기록:</strong> <span id="watchCount">0</span>개 시청함</p>
         <p><strong>획득한 포인트:</strong> 0 PT</p>
       </div>
     </div>
@@ -68,9 +64,8 @@
     <div id="registerSection" class="section" style="display: none;">
       <h2>회원가입</h2>
       <form id="registerForm">
-        <!-- 아이디(닉네임) 입력 -->
         <div class="input-group">
-          <label for="regUsername">아이디 (닉네임)</label>
+          <label for="regUsername">아이디</label>
           <input type="text" id="regUsername" placeholder="사용할 아이디 입력" required />
         </div>
 
@@ -105,13 +100,13 @@
       </form>
     </div>
 
-    <!-- 4. 로그인 화면 -->
+    <!-- 4. 로그인 화면 (아이디 입력으로 변경) -->
     <div id="loginSection" class="section" style="display: none;">
       <h2>로그인</h2>
       <form id="loginForm">
         <div class="input-group">
-          <label for="loginEmail">이메일</label>
-          <input type="email" id="loginEmail" placeholder="이메일을 입력하세요" required />
+          <label for="loginUsername">아이디</label>
+          <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required />
         </div>
         <div class="input-group">
           <label for="loginPw">비밀번호</label>
@@ -121,6 +116,18 @@
       </form>
     </div>
   </main>
+
+  <!-- 동영상 시청 모달 (팝업창) -->
+  <div id="videoModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModalBtn">&times;</span>
+      <h2 id="modalVideoTitle">영상 제목</h2>
+      <div class="video-container">
+        <iframe id="modalVideoPlayer" src="" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <p id="modalVideoDesc" style="margin-top: 15px; color: #555;"></p>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
