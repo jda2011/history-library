@@ -5,7 +5,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-// 영상 데이터 목록 (시대별 부록 포함)
+// 영상 데이터 목록
 const videoData = [
   { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선 성립', desc: '한반도 최초의 국가 고조선의 건국과 8조법을 살펴봅니다.', youtubeId: 'dQw4w9WgXcQ' },
   { id: 2, era: 'ancient', title: '[고대] 삼국시대 태동과 광개토대왕', desc: '고구려 전성기를 이끈 광개토대왕의 영토 확장 이야기입니다.', youtubeId: 'dQw4w9WgXcQ' },
@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const togglePwBtn = document.getElementById('togglePwBtn');
   const regPwInput = document.getElementById('regPw');
+  
+  const toggleLoginPwBtn = document.getElementById('toggleLoginPwBtn');
+  const loginPwInput = document.getElementById('loginPw');
 
   const videoList = document.getElementById('videoList');
   const videoModal = document.getElementById('videoModal');
@@ -106,11 +109,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 비밀번호 표시 토글
+  // 회원가입 비밀번호 표시 토글
   if (togglePwBtn && regPwInput) {
     togglePwBtn.addEventListener('click', () => {
       regPwInput.type = regPwInput.type === 'password' ? 'text' : 'password';
       togglePwBtn.textContent = regPwInput.type === 'password' ? '보임' : '숨김';
+    });
+  }
+
+  // 로그인 비밀번호 표시 토글
+  if (toggleLoginPwBtn && loginPwInput) {
+    toggleLoginPwBtn.addEventListener('click', () => {
+      loginPwInput.type = loginPwInput.type === 'password' ? 'text' : 'password';
+      toggleLoginPwBtn.textContent = loginPwInput.type === 'password' ? '보임' : '숨김';
     });
   }
 
@@ -128,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>${video.desc}</p>
       `;
 
-      // 클릭 시 영상 시청 모달 열기
       card.addEventListener('click', () => {
         if (!currentUser) {
           alert('영상을 시청하시려면 먼저 로그인해 주세요!');
@@ -164,23 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderVideos('all');
 
-  // --- 아이디 중복 확인 (모든 가입자 metadata 검사) ---
+  // --- 아이디 중복 확인 ---
   async function checkUsernameDuplicate(username) {
-    if (!supabaseClient) return false;
+    const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+    if (userMap[username]) return true;
 
-    // 로컬 스토리지에 중복 목록 기록 검사
-    const registeredUsernames = JSON.parse(localStorage.getItem('registered_usernames') || '[]');
-    if (registeredUsernames.includes(username)) {
-      return true;
+    if (supabaseClient) {
+      const { data } = await supabaseClient
+        .from('profiles')
+        .select('username')
+        .eq('username', username);
+      if (data && data.length > 0) return true;
     }
-
-    // Supabase profiles 테이블 검사
-    const { data } = await supabaseClient
-      .from('profiles')
-      .select('username')
-      .eq('username', username);
-
-    return data && data.length > 0;
+    return false;
   }
 
   // --- 회원가입 제출 ---
@@ -203,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // 아이디 중복 검사
+      // 아이디 중복 확인
       const isDuplicate = await checkUsernameDuplicate(username);
       if (isDuplicate) {
         alert('누군가 사용중입니다');
@@ -221,12 +227,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
-        // 중복 체크용 로컬 저장소에도 기록
-        const registeredUsernames = JSON.parse(localStorage.getItem('registered_usernames') || '[]');
-        registeredUsernames.push(username);
-        localStorage.setItem('registered_usernames', JSON.stringify(registeredUsernames));
+        // 아이디 - 이메일 맵핑 정보 로컬에 매칭 저장 (로그인 시 용이)
+        const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+        userMap[username] = email;
+        localStorage.setItem('user_map', JSON.stringify(userMap));
 
-        // profiles DB 저장 시도
         if (data.user) {
           await supabaseClient.from('profiles').insert([
             { id: data.user.id, username: username, age_group: ageGroup }
@@ -239,12 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- 로그인 제출 (아이디로 로그인) ---
+  // --- 로그인 제출 ---
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const username = document.getElementById('loginUsername').value.trim();
+      const inputVal = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPw').value;
 
       if (!supabaseClient) {
@@ -252,38 +257,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // 1. 아이디(username)로 가입된 이메일 찾기
-      const { data: profile } = await supabaseClient
-        .from('profiles')
-        .select('id')
-        .eq('username', username)
-        .single();
-
-      // 만약 profiles 테이블 조회가 안 된다면 아이디를 이메일 주소 형식으로 변환하여 시도
-      let loginEmail = `${username}@library.com`;
+      // 아이디로 입력한 경우 저장된 이메일 찾기
+      const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+      let targetEmail = userMap[inputVal] || inputVal;
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: loginEmail,
+        email: targetEmail,
         password: password
       });
 
       if (error) {
-        // 일반 이메일로 다시 로그인 재시도
-        const { data: retryData, error: retryError } = await supabaseClient.auth.signInWithPassword({
-          email: username,
-          password: password
-        });
-
-        if (retryError) {
-          alert('로그인 실패: 아이디 또는 비밀번호를 확인해 주세요.');
-        } else {
-          updateAuthState(retryData.user);
-          alert(`${username}님 환영합니다!`);
-          window.showSection('homeSection');
-        }
+        alert('로그인 실패: 아이디(이메일) 또는 비밀번호가 올바르지 않습니다.');
       } else {
         updateAuthState(data.user);
-        alert(`${username}님 환영합니다!`);
+        const displayName = data.user.user_metadata?.username || inputVal;
+        alert(`${displayName}님 환영합니다!`);
         window.showSection('homeSection');
       }
     });
