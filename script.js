@@ -3,9 +3,17 @@ let SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';
 
 SUPABASE_URL = SUPABASE_URL.replace(/\/+$\vert{}\/auth\/v1.*$/g, '');
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-// 영상 데이터 목록
+let supabaseClient = null;
+try {
+  if (window.supabase && SUPABASE_ANON_KEY !== ''sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn("Supabase 클라이언트 초기화 대기 중");
+}
+
+// 시대별 영상 데이터
 const videoData = [
   { id: 1, era: 'ancient', title: '[고대] 단군왕검과 고조선 성립', desc: '한반도 최초의 국가 고조선의 건국과 8조법을 살펴봅니다.', youtubeId: 'dQw4w9WgXcQ' },
   { id: 2, era: 'ancient', title: '[고대] 삼국시대 태동과 광개토대왕', desc: '고구려 전성기를 이끈 광개토대왕의 영토 확장 이야기입니다.', youtubeId: 'dQw4w9WgXcQ' },
@@ -20,6 +28,7 @@ const videoData = [
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 요소를 안전하게 가져오기
   const navHomeBtn = document.getElementById('navHomeBtn');
   const navLoginBtn = document.getElementById('navLoginBtn');
   const navRegisterBtn = document.getElementById('navRegisterBtn');
@@ -52,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentUser = null;
 
-  // 화면 전환
+  // 1. 화면 전환 함수
   window.showSection = function(sectionId) {
     if (homeSection) homeSection.style.display = 'none';
     if (myRoomSection) myRoomSection.style.display = 'none';
@@ -60,73 +69,84 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginSection) loginSection.style.display = 'none';
 
     const targetSection = document.getElementById(sectionId);
-    if (targetSection) targetSection.style.display = 'block';
+    if (targetSection) {
+      targetSection.style.display = 'block';
+    }
   };
 
-  // 로그인 상태 업데이트
+  // 2. 로그인 상태 업데이트 UI
   function updateAuthState(user) {
     currentUser = user;
     if (user) {
-      const username = user.user_metadata?.username || user.email.split('@')[0];
+      const username = user.user_metadata?.username || user.email?.split('@')[0] || '사용자';
       
-      guestNav.style.display = 'none';
-      userNav.style.display = 'flex';
+      if (guestNav) guestNav.style.display = 'none';
+      if (userNav) userNav.style.display = 'flex';
       
-      document.getElementById('userNicknameDisplay').textContent = username;
-      document.getElementById('myRoomUsername').textContent = username;
-      document.getElementById('myEmail').textContent = user.email;
-      document.getElementById('myNickname').textContent = username;
-      document.getElementById('welcomeMsg').textContent = `${username}님, 환영합니다! 동영상을 선택하여 시청해보세요.`;
+      const userNicknameDisplay = document.getElementById('userNicknameDisplay');
+      const myRoomUsername = document.getElementById('myRoomUsername');
+      const myEmail = document.getElementById('myEmail');
+      const myNickname = document.getElementById('myNickname');
+      const welcomeMsg = document.getElementById('welcomeMsg');
+
+      if (userNicknameDisplay) userNicknameDisplay.textContent = username;
+      if (myRoomUsername) myRoomUsername.textContent = username;
+      if (myEmail) myEmail.textContent = user.email || '-';
+      if (myNickname) myNickname.textContent = username;
+      if (welcomeMsg) welcomeMsg.textContent = `${username}님, 환영합니다! 동영상을 선택하여 시청해보세요.`;
     } else {
-      guestNav.style.display = 'flex';
-      userNav.style.display = 'none';
-      document.getElementById('welcomeMsg').textContent = '로그인 후 다양한 역사 동영상을 시청해보세요!';
+      if (guestNav) guestNav.style.display = 'flex';
+      if (userNav) userNav.style.display = 'none';
+      const welcomeMsg = document.getElementById('welcomeMsg');
+      if (welcomeMsg) welcomeMsg.textContent = '로그인 후 다양한 역사 동영상을 시청해보세요!';
     }
   }
 
-  // 초기 로그인 상태 확인
+  // 초기 로그인 세션 확인
   if (supabaseClient) {
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       updateAuthState(session ? session.user : null);
-    });
+    }).catch(() => updateAuthState(null));
+  } else {
+    updateAuthState(null);
   }
 
-  // 네비게이션 버튼
-  if (navHomeBtn) navHomeBtn.addEventListener('click', () => window.showSection('homeSection'));
-  if (navLoginBtn) navLoginBtn.addEventListener('click', () => window.showSection('loginSection'));
-  if (navRegisterBtn) navRegisterBtn.addEventListener('click', () => window.showSection('registerSection'));
-  if (navMyRoomBtn) navMyRoomBtn.addEventListener('click', () => window.showSection('myRoomSection'));
+  // 3. 네비게이션 버튼 바인딩
+  if (navHomeBtn) navHomeBtn.onclick = () => window.showSection('homeSection');
+  if (navLoginBtn) navLoginBtn.onclick = () => window.showSection('loginSection');
+  if (navRegisterBtn) navRegisterBtn.onclick = () => window.showSection('registerSection');
+  if (navMyRoomBtn) navMyRoomBtn.onclick = () => window.showSection('myRoomSection');
 
   // 로그아웃
   if (navLogoutBtn) {
-    navLogoutBtn.addEventListener('click', async () => {
+    navLogoutBtn.onclick = async () => {
       if (supabaseClient) {
         await supabaseClient.auth.signOut();
-        updateAuthState(null);
-        alert('로그아웃 되었습니다.');
-        window.showSection('homeSection');
       }
-    });
+      updateAuthState(null);
+      alert('로그아웃 되었습니다.');
+      window.showSection('homeSection');
+    };
   }
 
-  // 회원가입 비밀번호 표시 토글
+  // 4. 비밀번호 표시 토글
   if (togglePwBtn && regPwInput) {
-    togglePwBtn.addEventListener('click', () => {
+    togglePwBtn.onclick = () => {
       regPwInput.type = regPwInput.type === 'password' ? 'text' : 'password';
       togglePwBtn.textContent = regPwInput.type === 'password' ? '보임' : '숨김';
-    });
+    };
   }
 
-  // 로그인 비밀번호 표시 토글
   if (toggleLoginPwBtn && loginPwInput) {
-    toggleLoginPwBtn.addEventListener('click', () => {
+    toggleLoginPwBtn.onclick = () => {
       loginPwInput.type = loginPwInput.type === 'password' ? 'text' : 'password';
       toggleLoginPwBtn.textContent = loginPwInput.type === 'password' ? '보임' : '숨김';
-    });
+    };
   }
 
-  // --- 동영상 카트 렌더링 및 클릭 시 시청 ---
+  // 5. 영상 목록 렌더링 및 모달 클릭
   function renderVideos(eraFilter = 'all') {
+    if (!videoList) return;
     videoList.innerHTML = '';
     const filtered = eraFilter === 'all' ? videoData : videoData.filter(v => v.era === eraFilter);
 
@@ -139,17 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
         <p>${video.desc}</p>
       `;
 
-      card.addEventListener('click', () => {
+      card.onclick = () => {
         if (!currentUser) {
           alert('영상을 시청하시려면 먼저 로그인해 주세요!');
           window.showSection('loginSection');
           return;
         }
-        modalVideoTitle.textContent = video.title;
-        modalVideoDesc.textContent = video.desc;
-        modalVideoPlayer.src = `https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`;
-        videoModal.style.display = 'flex';
-      });
+        if (modalVideoTitle) modalVideoTitle.textContent = video.title;
+        if (modalVideoDesc) modalVideoDesc.textContent = video.desc;
+        if (modalVideoPlayer) modalVideoPlayer.src = `https://www.youtube.com/embed/${video.youtubeId}?autoplay=1`;
+        if (videoModal) videoModal.style.display = 'flex';
+      };
 
       videoList.appendChild(card);
     });
@@ -157,41 +177,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 모달 닫기
   if (closeModalBtn) {
-    closeModalBtn.addEventListener('click', () => {
-      videoModal.style.display = 'none';
-      modalVideoPlayer.src = '';
-    });
+    closeModalBtn.onclick = () => {
+      if (videoModal) videoModal.style.display = 'none';
+      if (modalVideoPlayer) modalVideoPlayer.src = '';
+    };
   }
 
-  // 시대별 탭 클릭 이벤트
-  document.querySelectorAll('.era-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      document.querySelectorAll('.era-btn').forEach(b => b.classList.remove('active'));
-      e.target.classList.add('active');
-      renderVideos(e.target.dataset.era);
-    });
+  // 시대별 부록 탭 이벤트
+  const eraButtons = document.querySelectorAll('.era-btn');
+  eraButtons.forEach(btn => {
+    btn.onclick = (e) => {
+      eraButtons.forEach(b => b.classList.remove('active'));
+      e.currentTarget.classList.add('active');
+      renderVideos(e.currentTarget.dataset.era);
+    };
   });
 
   renderVideos('all');
 
-  // --- 아이디 중복 확인 ---
+  // 6. 아이디 중복 체크
   async function checkUsernameDuplicate(username) {
     const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
     if (userMap[username]) return true;
 
     if (supabaseClient) {
-      const { data } = await supabaseClient
-        .from('profiles')
-        .select('username')
-        .eq('username', username);
-      if (data && data.length > 0) return true;
+      try {
+        const { data } = await supabaseClient
+          .from('profiles')
+          .select('username')
+          .eq('username', username);
+        if (data && data.length > 0) return true;
+      } catch (err) {}
     }
     return false;
   }
 
-  // --- 회원가입 제출 ---
+  // 7. 회원가입 제출
   if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
+    registerForm.onsubmit = async (e) => {
       e.preventDefault();
       
       const username = document.getElementById('regUsername').value.trim();
@@ -216,6 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      if (!supabaseClient) {
+        alert('Supabase 키가 설정되지 않았습니다. script.js 최상단 키값을 등록해 주세요.');
+        return;
+      }
+
       const { data, error } = await supabaseClient.auth.signUp({
         email: email,
         password: password,
@@ -227,37 +255,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) {
         alert('회원가입 실패: ' + error.message);
       } else {
-        // 아이디 - 이메일 맵핑 정보 로컬에 매칭 저장 (로그인 시 용이)
         const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
         userMap[username] = email;
         localStorage.setItem('user_map', JSON.stringify(userMap));
 
-        if (data.user) {
-          await supabaseClient.from('profiles').insert([
-            { id: data.user.id, username: username, age_group: ageGroup }
-          ]).catch(() => {});
-        }
-
         alert('회원가입 성공! 이제 로그인해 주세요.');
         window.showSection('loginSection');
       }
-    });
+    };
   }
 
-  // --- 로그인 제출 ---
+  // 8. 로그인 제출
   if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
+    loginForm.onsubmit = async (e) => {
       e.preventDefault();
       
       const inputVal = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPw').value;
 
       if (!supabaseClient) {
-        alert('Supabase 키 설정을 확인해 주세요.');
+        alert('Supabase 키가 설정되지 않았습니다. script.js 최상단 키값을 등록해 주세요.');
         return;
       }
 
-      // 아이디로 입력한 경우 저장된 이메일 찾기
       const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
       let targetEmail = userMap[inputVal] || inputVal;
 
@@ -274,6 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(`${displayName}님 환영합니다!`);
         window.showSection('homeSection');
       }
-    });
+    };
   }
 });
