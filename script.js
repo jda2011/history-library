@@ -104,7 +104,7 @@ async function checkAuthState() {
     }
 
     // 💡 관리자 이메일 설정 (원하는 관리자 이메일 주소를 입력하세요)
-    const ADMIN_EMAIL = 'admin@email.com'; // 👈 본인의 관리자 이메일로 변경하세요!
+    const ADMIN_EMAIL = '8yskvkwj@gmail.com'; // 👈 본인의 관리자 이메일로 변경하세요!
 
     if (btns.admin) {
       if (user.email === ADMIN_EMAIL) {
