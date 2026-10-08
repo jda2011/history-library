@@ -17,6 +17,25 @@
 </body>
 </html>
 
+<!-- 헤더 / 네비게이션 예시 -->
+<header>
+  <h1 class="logo">역사 동영상 도서관</h1>
+  
+  <nav>
+    <!-- 로그인 전 -->
+    <div class="auth-logged-out">
+      <button type="button" id="loginBtn" class="btn-login">로그인</button>
+      <button type="button" id="signupBtn" class="btn-signup">회원가입</button>
+    </div>
+
+    <!-- 로그인 후 -->
+    <div class="auth-logged-in" style="display: none;">
+      <button type="button" id="userNavBtnText">내 방</button>
+      <button type="button">로그아웃</button>
+    </div>
+  </nav>
+</header>
+
   <!-- 상단 네비게이션 바 -->
   <header class="navbar">
     <div class="logo" id="navHomeBtn" style="cursor: pointer;">
