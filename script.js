@@ -261,3 +261,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+
+// 로그인 처리 로직
+const inputVal = document.getElementById('loginUsername').value.trim();
+const password = document.getElementById('loginPw').value;
+
+// 1. LocalStorage에서 저장된 아이디-이메일 매핑 정보 확인
+const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+let targetEmail = userMap[inputVal];
+
+// 2. 만약 이메일 형태(@ 포함)를 직접 입력했거나, 매핑 데이터가 없다면 입력값 그대로 사용
+if (!targetEmail) {
+  targetEmail = inputVal.includes('@') ? inputVal : `${inputVal}@library.com`;
+}
+
+// 3. Supabase 로그인 실행
+const { data, error } = await supabaseClient.auth.signInWithPassword({
+  email: targetEmail,
+  password: password
+});
