@@ -265,3 +265,160 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+
+window.showSection = function(sectionId) {
+  const sections = ['homeSection', 'myRoomSection', 'registerSection', 'loginSection', 'adminSection'];
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (id === sectionId) ? 'block' : 'none';
+  });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  const guestNav = document.getElementById('guestNav');
+  const userNav = document.getElementById('userNav');
+  let currentUser = null;
+
+  function updateAuthState(user) {
+    currentUser = user;
+    const adminBadge = document.getElementById('adminBadge');
+    const navAdminBtn = document.getElementById('navAdminBtn');
+
+    if (user) {
+      const username = user.user_metadata?.username || user.email?.split('@')[0] || '사용자';
+      const userRole = (username === 'jj') ? 'admin' : (user.user_metadata?.role || 'user');
+
+      if (guestNav) guestNav.style.display = 'none';
+      if (userNav) userNav.style.display = 'flex';
+
+      if (userRole === 'admin') {
+        if (adminBadge) adminBadge.style.display = 'inline-block';
+        if (navAdminBtn) navAdminBtn.style.display = 'inline-block';
+      } else {
+        if (adminBadge) adminBadge.style.display = 'none';
+        if (navAdminBtn) navAdminBtn.style.display = 'none';
+      }
+
+      document.getElementById('userNicknameDisplay').textContent = username;
+      document.getElementById('myRoomUsername').textContent = username;
+      document.getElementById('myEmail').textContent = user.email || '-';
+    } else {
+      if (guestNav) guestNav.style.display = 'flex';
+      if (userNav) userNav.style.display = 'none';
+    }
+  }
+
+  if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      updateAuthState(session ? session.user : null);
+    });
+  }
+
+  // 상단 바 버튼
+  document.getElementById('navHomeBtn').onclick = () => window.showSection('homeSection');
+  document.getElementById('navLoginBtn').onclick = () => window.showSection('loginSection');
+  document.getElementById('navRegisterBtn').onclick = () => window.showSection('registerSection');
+  document.getElementById('navMyRoomBtn').onclick = () => window.showSection('myRoomSection');
+  document.getElementById('navAdminBtn').onclick = () => {
+    window.showSection('adminSection');
+    if (typeof window.renderAdminManageList === 'function') window.renderAdminManageList();
+    if (typeof window.populateQuizVideoSelect === 'function') window.populateQuizVideoSelect();
+  };
+
+  // 로그아웃 재확인
+  document.getElementById('navLogoutBtn').onclick = async () => {
+    if (confirm('정말 로그아웃 하시겠습니까?')) {
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      updateAuthState(null);
+      alert('로그아웃 되었습니다.');
+      window.showSection('homeSection');
+    }
+  };
+
+  // 비밀번호 보임/숨김 토글
+  const togglePwBtn = document.getElementById('togglePwBtn');
+  const regPwInput = document.getElementById('regPw');
+  if (togglePwBtn && regPwInput) {
+    togglePwBtn.onclick = () => {
+      const isPw = regPwInput.type === 'password';
+      regPwInput.type = isPw ? 'text' : 'password';
+      togglePwBtn.textContent = isPw ? '숨김' : '보임';
+    };
+  }
+
+  const toggleLoginPwBtn = document.getElementById('toggleLoginPwBtn');
+  const loginPwInput = document.getElementById('loginPw');
+  if (toggleLoginPwBtn && loginPwInput) {
+    toggleLoginPwBtn.onclick = () => {
+      const isPw = loginPwInput.type === 'password';
+      loginPwInput.type = isPw ? 'text' : 'password';
+      toggleLoginPwBtn.textContent = isPw ? '숨김' : '보임';
+    };
+  }
+
+  // 회원가입
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) {
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPw').value;
+
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: { data: { username: username, role: username === 'jj' ? 'admin' : 'user' } }
+      });
+
+      if (error) {
+        alert('회원가입 실패: ' + error.message);
+      } else {
+        // 아이디-이메일 매핑 저장
+        const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+        userMap[username] = email;
+        localStorage.setItem('user_map', JSON.stringify(userMap));
+
+        alert(`${username}님, 회원가입이 완료되었습니다!`);
+        window.showSection('loginSection');
+      }
+    };
+  }
+
+  // 로그인 (매핑 및 하드코딩된 이메일 지원)
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const inputVal = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPw').value;
+
+      const userMap = JSON.parse(localStorage.getItem('user_map') || '{}');
+      let targetEmail = userMap[inputVal];
+
+      // jj 계정의 실제 이메일 특수 예외 처리
+      if (inputVal === 'jj') {
+        targetEmail = targetEmail || '8yskvkwj@gmail.com';
+      }
+
+      if (!targetEmail) {
+        targetEmail = inputVal.includes('@') ? inputVal : `${inputVal}@library.com`;
+      }
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: targetEmail,
+        password: password
+      });
+
+      if (error) {
+        alert('로그인 실패: 아이디 또는 비밀번호를 확인해 주세요.');
+      } else {
+        updateAuthState(data.user);
+        alert(`${inputVal}님, 환영합니다!`);
+        window.showSection('homeSection');
+      }
+    };
+  }
+});
