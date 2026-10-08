@@ -264,3 +264,24 @@ async function checkAuthState() {
   checkAuthState();
   loadVideos();
 });
+
+// 로그아웃 이벤트 처리
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    // 1. 재차 확인 물어보기
+    const confirmLogout = confirm('정말 로그아웃 하시겠습니까?');
+    if (!confirmLogout) return; // '취소' 클릭 시 중단
+
+    // 2. 로그아웃 진행
+    if (typeof supabaseClient !== 'undefined') {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        alert('로그아웃 중 오류가 발생했습니다: ' + error.message);
+        return;
+      }
+    }
+    
+    alert('로그아웃 되었습니다.');
+    window.location.href = 'index.html'; // 메인 또는 로그인 페이지로 이동
+  });
+}
