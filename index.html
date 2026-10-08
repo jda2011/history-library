@@ -166,3 +166,34 @@
   <!-- 파비콘 오류 방지용 가짜 링크 -->
   <link rel="shortcut icon" href="#">
 </head>
+
+  <!-- 로그인 모달 (팝업창) -->
+  <div id="loginModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
+      <h2>로그인</h2>
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="이메일" required>
+        <input type="password" id="loginPassword" placeholder="비밀번호" required>
+        <button type="submit" class="btn-primary">로그인</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 회원가입 모달 (팝업창) -->
+  <div id="signupModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
+      <h2>회원가입</h2>
+      <form id="signupForm">
+        <input type="email" id="signupEmail" placeholder="이메일" required>
+        <input type="password" id="signupPassword" placeholder="비밀번호" required>
+        <button type="submit" class="btn-primary">회원가입</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ★ 가장 중요: script.js 연결 태그가 </body> 바로 위에 있는지 확인 ★ -->
+  <script src="script.js"></script>
+</body>
+</html>
