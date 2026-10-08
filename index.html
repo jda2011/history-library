@@ -80,14 +80,64 @@
       </div>
     </section>
 
-    <!-- 4. 내 방 (마이페이지) -->
-    <section id="myRoomSection" class="content-section" style="display: none;">
-      <div class="profile-card">
-        <h2>👤 내 정보</h2>
-        <p><strong>닉네임:</strong> <span id="myRoomUsername">-</span></p>
-        <p><strong>이메일:</strong> <span id="myEmail">-</span></p>
+   <!-- 내 방 (My Room Section - EBS 나의 방 스타일) -->
+<section id="myRoomView" class="view-section" style="display: none;">
+  <div class="my-room-container">
+    
+    <!-- 프로필 및 학습 요약 헤더 -->
+    <div class="profile-header-card">
+      <div class="user-avatar">🎓</div>
+      <div class="user-details">
+        <h3><span id="myRoomNickname">jj</span> 님의 학습 공간</h3>
+        <p class="email-text" id="myRoomEmail">8yskvkwj@gmail.com</p>
       </div>
-    </section>
+      <div class="learning-summary">
+        <div class="summary-item">
+          <span class="label">시청한 영상</span>
+          <span class="value">12개</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">완료한 퀴즈</span>
+          <span class="value">8개</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">학습 포인트</span>
+          <span class="value">350 P</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- EBS 스타일 학습 그리드 레아아웃 -->
+    <div class="my-room-grid">
+      <!-- 최근 학습 중인 동영상 -->
+      <div class="dashboard-card">
+        <h4>📺 최근 시청한 역사 영상</h4>
+        <div class="video-history-list">
+          <div class="history-item">
+            <span class="badge">조선</span>
+            <span class="title">조선 건국과 정도전의 개혁</span>
+            <span class="progress-bar"><span style="width: 80%;"></span></span>
+          </div>
+          <div class="history-item">
+            <span class="badge">고려</span>
+            <span class="title">삼국통일과 신라의 골품제</span>
+            <span class="progress-bar"><span style="width: 45%;"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 내가 찜한 영상 / 북마크 -->
+      <div class="dashboard-card">
+        <h4>⭐ 내가 즐겨찾기한 영상</h4>
+        <ul class="bookmark-list">
+          <li>[근현대사] 8·15 광복과 남북 분단 과정</li>
+          <li>[고대사] 광개토대왕비에 담긴 고구려의 역사</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
 
     <!-- 관리자 방 (Admin Section) -->
 <section id="adminView" class="view-section" style="display: none;">
