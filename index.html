@@ -4,291 +4,172 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>역사 동영상 도서관</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📜</text></svg>">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #fdfbf7; color: #333; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background: #fff0f3; border-bottom: 2px solid #ffccd5; }
+    header h1 { font-size: 22px; color: #d63384; cursor: pointer; }
+    nav { display: flex; gap: 10px; align-items: center; }
+    
+    button { cursor: pointer; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; transition: 0.2s; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-admin { background: #8b5cf6; color: white; }
+
+    section { max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* EBS 마이페이지 스타일 */
+    .ebs-profile-card { background: #e0f2fe; padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+    .ebs-avatar { width: 60px; height: 60px; background: #0284c7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .ebs-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+    .ebs-stat-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
+    .ebs-stat-box strong { font-size: 20px; color: #0284c7; display: block; margin-top: 5px; }
+
+    /* 폼 스타일 */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; }
+    .pw-input-wrapper { display: flex; gap: 5px; }
+
+    /* 비디오 카드 Grid */
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .video-card { border: 1px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer; background: #fff; transition: transform 0.2s; }
+    .video-card:hover { transform: translateY(-4px); }
+    .video-thumbnail { height: 120px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 40px; border-radius: 6px; }
+  </style>
 </head>
 <body>
-  <!-- 상단 네비게이션 헤더 -->
-  <header class="navbar">
-    <div class="logo" id="navHomeBtn" style="cursor: pointer;">📜 역사 동영상 도서관</div>
-    
-    <!-- 비로그인 시 표시되는 버튼 -->
-    <div class="nav-buttons" id="guestNav">
-      <button id="navLoginBtn" type="button" class="btn-login">로그인</button>
-      <button id="navRegisterBtn" type="button" class="btn-register">회원가입</button>
-    </div>
 
-    <!-- 로그인 시 표시되는 버튼 -->
-    <div class="nav-buttons" id="userNav" style="display: none;">
-      <button id="navMyRoomBtn" type="button" class="btn-myroom">👤 <span id="userNicknameDisplay">사용자</span>님의 방</button>
-      <button id="navLogoutBtn" type="button" class="btn-logout">로그아웃</button>
-    </div>
+  <header>
+    <h1 id="navHomeBtn">📜 역사 동영상 도서관</h1>
+    <nav id="guestNav">
+      <button class="btn-primary" id="navLoginBtn">로그인</button>
+      <button class="btn-primary" id="navRegisterBtn" style="background:#10b981;">회원가입</button>
+    </nav>
+    <nav id="userNav" style="display:none;">
+      <span id="adminBadge" style="display:none; background:#8b5cf6; color:white; padding:4px 8px; border-radius:4px; font-size:12px;">관리자 계정</span>
+      <button class="btn-primary" id="navMyRoomBtn">👤 <span id="userNicknameDisplay"></span>님의 방</button>
+      <button class="btn-admin" id="navAdminBtn" style="display:none;">🛠️ 관리자 방</button>
+      <button class="btn-danger" id="navLogoutBtn">로그아웃</button>
+    </nav>
   </header>
 
-  <!-- 메인 콘텐츠 영역 -->
-  <main class="container">
-    <!-- 1. 홈 화면 (시대별 부록 및 동영상 목록) -->
-    <div id="homeSection" class="section">
-      <h1>🎬 역사 동영상 시청하기</h1>
-      <p id="welcomeMsg">로그인 후 다양한 역사 동영상을 시청해보세요!</p>
+  <!-- 메인 시청 영역 -->
+  <section id="homeSection">
+    <h2>🎬 역사 동영상 시청하기</h2>
+    <p style="color:#666; margin-top:5px;">원하는 시대를 선택하여 영상을 시청해보세요.</p>
+    <div class="video-grid" id="videoList"></div>
+  </section>
 
-      <!-- 시대별 부록 카테고리 탭 -->
-      <div class="era-tabs">
-        <button type="button" class="era-btn active" data-era="all">전체</button>
-        <button type="button" class="era-btn" data-era="ancient">🏛️ 고대</button>
-        <button type="button" class="era-btn" data-era="medieval">⚔️ 중세</button>
-        <button type="button" class="era-btn" data-era="early-modern">📜 근세</button>
-        <button type="button" class="era-btn" data-era="modern">🚂 근대</button>
-        <button type="button" class="era-btn" data-era="contemporary">🏙️ 현대</button>
-      </div>
-      
-      <!-- 영상 목록 -->
-      <div class="video-grid" id="videoList"></div>
-    </div>
-
-    <!-- 2. 개인 방 (마이페이지) -->
-    <div id="myRoomSection" class="section" style="display: none;">
-      <h2>👤 <span id="myRoomUsername">사용자</span>님의 개인 방</h2>
-      <div class="my-info-card">
-        <p><strong>아이디:</strong> <span id="myNickname">-</span></p>
-        <p><strong>이메일:</strong> <span id="myEmail">-</span></p>
-        <p><strong>시청 기록:</strong> <span id="watchCount">0</span>개 시청함</p>
-        <p><strong>획득한 포인트:</strong> 0 PT</p>
+  <!-- EBS 스타일 개인 방 (마이페이지) -->
+  <section id="myRoomSection" style="display:none;">
+    <div class="ebs-profile-card">
+      <div class="ebs-avatar">👤</div>
+      <div>
+        <h2 id="myRoomUsername">사용자</h2>
+        <p style="color:#666; font-size:14px;" id="myEmail">-</p>
       </div>
     </div>
 
-    <!-- 3. 회원가입 화면 -->
-    <div id="registerSection" class="section" style="display: none;">
-      <h2>회원가입</h2>
-      <form id="registerForm">
-        <div class="input-group">
-          <label for="regUsername">아이디</label>
-          <input type="text" id="regUsername" placeholder="사용할 아이디 입력" required />
-        </div>
+    <h3>📊 나의 학습 현황 (EBS 나의 방)</h3>
+    <div class="ebs-stats-grid">
+      <div class="ebs-stat-box">시청한 강좌<strong id="myWatchCount">0개</strong></div>
+      <div class="ebs-stat-box">풀었던 퀴즈<strong id="myQuizCount">0개</strong></div>
+      <div class="ebs-stat-box">획득한 포인트<strong id="myPoints">0 PT</strong></div>
+    </div>
+  </section>
 
-        <div class="input-group">
-          <label for="regEmail">이메일</label>
-          <input type="email" id="regEmail" placeholder="example@email.com" required />
-        </div>
-        
-        <div class="input-group">
-          <label for="regPw">비밀번호 (6자 이상 + 특수문자 1개 이상)</label>
-          <div class="pw-wrapper">
-            <input type="password" id="regPw" placeholder="6자 이상, 특수문자 포함" minlength="6" required />
-            <button type="button" id="togglePwBtn" class="btn-toggle">보임</button>
-          </div>
-        </div>
+  <!-- 관리자 방 (jj 전용) -->
+  <section id="adminSection" style="display:none;">
+    <h2>🛠️ 관리자 센터 (영상의 게시 및 문제 관리)</h2>
+    <hr style="margin: 15px 0;">
 
-        <div class="input-group">
-          <label for="regAge">연령대</label>
-          <select id="regAge" required>
-            <option value="">선택해 주세요</option>
-            <option value="초6 이하">초6 이하</option>
-            <option value="중1">중1</option>
-            <option value="중2">중2</option>
-            <option value="중3">중3</option>
-            <option value="고1">고1</option>
-            <option value="고2">고2</option>
-            <option value="고3 이후">고3 이후</option>
+    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+      <h3>📺 영상 등록하기</h3>
+      <form id="adminAddVideoForm" style="margin-top:10px;">
+        <div class="form-group">
+          <label>시대 구분</label>
+          <select id="adminVideoEra">
+            <option value="ancient">고대</option>
+            <option value="medieval">중세</option>
+            <option value="modern">근대</option>
+            <option value="contemporary">현대</option>
           </select>
         </div>
-
-        <button type="submit" class="submit-btn">가입하기</button>
+        <div class="form-group"><label>영상 제목</label><input type="text" id="adminVideoTitle" required></div>
+        <div class="form-group"><label>YouTube 비디오 ID</label><input type="text" id="adminVideoYoutubeId" placeholder="예: dQw4w9WgXcQ" required></div>
+        <div class="form-group"><label>설명</label><textarea id="adminVideoDesc" rows="2" required></textarea></div>
+        <button type="submit" class="btn-primary">영상 게시</button>
       </form>
     </div>
 
-    <!-- 4. 로그인 화면 -->
-    <div id="loginSection" class="section" style="display: none;">
-      <h2>로그인</h2>
-      <form id="loginForm">
-        <div class="input-group">
-          <label for="loginUsername">아이디 또는 이메일</label>
-          <input type="text" id="loginUsername" placeholder="아이디 또는 이메일 입력" required />
+    <div style="background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px;">
+      <h3>❓ 문제(퀴즈) 등록하기</h3>
+      <form id="adminAddQuizForm" style="margin-top:10px;">
+        <div class="form-group">
+          <label>연결할 영상</label>
+          <select id="adminQuizVideoSelect" required></select>
         </div>
-        
-        <div class="input-group">
-          <label for="loginPw">비밀번호</label>
-          <div class="pw-wrapper">
-            <input type="password" id="loginPw" placeholder="비밀번호를 입력하세요" required />
-            <button type="button" id="toggleLoginPwBtn" class="btn-toggle">보임</button>
-          </div>
+        <div class="form-group"><label>퀴즈 질문</label><input type="text" id="adminQuizQuestion" required></div>
+        <div class="form-group"><label>보기 1</label><input type="text" id="adminQuizOpt1" required></div>
+        <div class="form-group"><label>보기 2</label><input type="text" id="adminQuizOpt2" required></div>
+        <div class="form-group"><label>보기 3</label><input type="text" id="adminQuizOpt3" required></div>
+        <div class="form-group"><label>보기 4</label><input type="text" id="adminQuizOpt4" required></div>
+        <div class="form-group">
+          <label>정답 번호</label>
+          <select id="adminQuizAnswer">
+            <option value="1">1번</option><option value="2">2번</option>
+            <option value="3">3번</option><option value="4">4번</option>
+          </select>
         </div>
-
-        <button type="submit" class="submit-btn">로그인</button>
+        <button type="submit" class="btn-admin">문제 게시</button>
       </form>
     </div>
-  </main>
 
-  <!-- 동영상 시청 모달 (팝업창) -->
-  <div id="videoModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <span class="close-btn" id="closeModalBtn">&times;</span>
-      <h2 id="modalVideoTitle">영상 제목</h2>
-      <div class="video-container">
-        <iframe id="modalVideoPlayer" src="" frameborder="0" allowfullscreen></iframe>
+    <h3>📂 등록된 콘텐츠 및 삭제 관리</h3>
+    <div id="adminManageList" style="margin-top:10px;"></div>
+  </section>
+
+  <!-- 로그인 화면 -->
+  <section id="loginSection" style="display:none; max-width:400px;">
+    <h2>로그인</h2>
+    <form id="loginForm" style="margin-top:15px;">
+      <div class="form-group">
+        <label>아이디 또는 이메일</label>
+        <input type="text" id="loginUsername" placeholder="아이디를 입력하세요" required>
       </div>
-      <p id="modalVideoDesc" style="margin-top: 15px; color: #555;"></p>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
-
-<!-- 네비게이션 내 로그인 사용자 영역 -->
-<div id="userNav" style="display: none;">
-  <span id="userNicknameDisplay"></span>
-  <!-- 👑 관리자 전용 표시 배지 -->
-  <span id="adminBadge" style="display: none; background: red; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: 5px;">관리자</span>
-  
-  <button id="navMyRoomBtn">내정보</button>
-  <!-- 👑 관리자 전용 페이지/메뉴 버튼 -->
-  <button id="navAdminBtn" style="display: none; background-color: #ff9800;">관리자 페이지</button>
-  <button id="navLogoutBtn">로그아웃</button>
-</div>
-
-// 관리자 부분
-<div id="userNav" style="display: none;">
-  <span id="userNicknameDisplay"></span>
-  <!-- 관리자 배지 -->
-  <span id="adminBadge" style="display: none; background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; font-weight: bold;">관리자</span>
-  
-  <button id="navMyRoomBtn">내정보</button>
-  <!-- 관리자 페이지 이동 버튼 -->
-  <button id="navAdminBtn" style="display: none; background-color: #f39c12; color: white;">⚙️ 관리자 센터</button>
-  <button id="navLogoutBtn">로그아웃</button>
-</div>
-
-<!-- ⚙️ 관리자 전용 섹션 -->
-<section id="adminSection" style="display: none; max-width: 800px; margin: 20px auto; padding: 20px; border: 2px solid #f39c12; border-radius: 8px; background-color: #fff9f0;">
-
-  <!-- 관리자 화면 영역 -->
-<section id="adminSection" style="display:none; padding: 20px;">
-  <h2>🛠️ 관리자 방</h2>
-  <hr style="margin-bottom: 20px;">
-
-  <!-- 1. 영상 등록 폼 -->
-  <div style="background: #f4f6f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>📺 새로운 영상 게시</h3>
-    <form id="adminAddVideoForm" style="display:flex; flex-direction:column; gap:10px; max-width:500px;">
-      <select id="adminVideoEra" required>
-        <option value="ancient">고대</option>
-        <option value="medieval">중세</option>
-        <option value="modern">근대</option>
-        <option value="contemporary">현대</option>
-      </select>
-      <input type="text" id="adminVideoTitle" placeholder="영상 제목" required>
-      <input type="text" id="adminVideoYoutubeId" placeholder="YouTube ID (예: dQw4w9WgXcQ)" required>
-      <textarea id="adminVideoDesc" placeholder="영상 설명" required></textarea>
-      <button type="submit" style="padding:10px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;">영상 등록</button>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="pw-input-wrapper">
+          <input type="password" id="loginPw" required>
+          <button type="button" id="toggleLoginPwBtn">보임</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">로그인</button>
     </form>
-  </div>
+  </section>
 
-  <!-- 2. 퀴즈 등록 폼 -->
-  <div style="background: #f4f6f9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h3>❓ 새로운 퀴즈 게시</h3>
-    <form id="adminAddQuizForm" style="display:flex; flex-direction:column; gap:10px; max-width:500px;">
-      <select id="adminQuizVideoSelect" required>
-        <option value="">영상을 선택하세요</option>
-      </select>
-      <input type="text" id="adminQuizQuestion" placeholder="퀴즈 질문" required>
-      <input type="text" id="adminQuizOpt1" placeholder="보기 1" required>
-      <input type="text" id="adminQuizOpt2" placeholder="보기 2" required>
-      <input type="text" id="adminQuizOpt3" placeholder="보기 3" required>
-      <input type="text" id="adminQuizOpt4" placeholder="보기 4" required>
-      <select id="adminQuizAnswer" required>
-        <option value="1">정답: 1번</option>
-        <option value="2">정답: 2번</option>
-        <option value="3">정답: 3번</option>
-        <option value="4">정답: 4번</option>
-      </select>
-      <button type="submit" style="padding:10px; background:#2ecc71; color:white; border:none; border-radius:4px; cursor:pointer;">퀴즈 등록</button>
+  <!-- 회원가입 화면 -->
+  <section id="registerSection" style="display:none; max-width:400px;">
+    <h2>회원가입</h2>
+    <form id="registerForm" style="margin-top:15px;">
+      <div class="form-group"><label>아이디</label><input type="text" id="regUsername" required></div>
+      <div class="form-group"><label>이메일</label><input type="email" id="regEmail" required></div>
+      <div class="form-group">
+        <label>비밀번호</label>
+        <div class="pw-input-wrapper">
+          <input type="password" id="regPw" required>
+          <button type="button" id="togglePwBtn">보임</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%; padding:12px;">가입하기</button>
     </form>
-  </div>
+  </section>
 
-  <!-- 3. 등록된 목록 및 삭제 관리 -->
-  <div id="adminManageList" style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #ddd;"></div>
-</section>
-  
-  <h2>⚙️ 관리자 전용 센터</h2>
-  <p>영상의 추가/삭제 및 퀴즈(문제)의 관리를 진행할 수 있습니다.</p>
-
-  <!-- 1. 영상 관리 -->
-  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h3>📺 영상 업로드 (등록)</h3>
-    <form id="adminAddVideoForm">
-      <div style="margin-bottom: 10px;">
-        <label>시대 구분:</label>
-        <select id="adminVideoEra" required style="width: 100%; padding: 8px;">
-          <option value="ancient">고대</option>
-          <option value="medieval">중세</option>
-          <option value="early-modern">근세</option>
-          <option value="modern">근대</option>
-          <option value="contemporary">현대</option>
-        </select>
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>영상 제목:</label>
-        <input type="text" id="adminVideoTitle" placeholder="예: [고대] 삼국시대 태동" required style="width: 100%; padding: 8px;" />
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>YouTube ID (URL의 v= 뒷부분):</label>
-        <input type="text" id="adminVideoYoutubeId" placeholder="예: dQw4w9WgXcQ" required style="width: 100%; padding: 8px;" />
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>영상 설명:</label>
-        <textarea id="adminVideoDesc" placeholder="영상 요약 설명 입력" required style="width: 100%; padding: 8px; height: 60px;"></textarea>
-      </div>
-      <button type="submit" style="background: #27ae60; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">+ 영상 추가하기</button>
-    </form>
-  </div>
-
-  <!-- 2. 퀴즈(문제) 관리 -->
-  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h3>❓ 퀴즈(문제) 업로드</h3>
-    <form id="adminAddQuizForm">
-      <div style="margin-bottom: 10px;">
-        <label>연관 영상 선택:</label>
-        <select id="adminQuizVideoSelect" required style="width: 100%; padding: 8px;"></select>
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>질문 내용:</label>
-        <input type="text" id="adminQuizQuestion" placeholder="예: 고조선을 건국한 인물은?" required style="width: 100%; padding: 8px;" />
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>보기 1:</label><input type="text" id="adminQuizOpt1" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
-        <label>보기 2:</label><input type="text" id="adminQuizOpt2" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
-        <label>보기 3:</label><input type="text" id="adminQuizOpt3" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
-        <label>보기 4:</label><input type="text" id="adminQuizOpt4" required style="width: 100%; padding: 6px; margin-bottom: 4px;" />
-      </div>
-      <div style="margin-bottom: 10px;">
-        <label>정답 번호 (1~4):</label>
-        <input type="number" id="adminQuizAnswer" min="1" max="4" required style="width: 100%; padding: 8px;" />
-      </div>
-      <button type="submit" style="background: #2980b9; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">+ 퀴즈 등록하기</button>
-    </form>
-  </div>
-
-  <!-- 3. 현재 등록된 영상 및 퀴즈 목록 (삭제용) -->
-  <div style="margin-top: 20px; padding: 15px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-    <h3>🗑️ 등록된 콘텐츠 관리 (삭제)</h3>
-    <div id="adminManageList"></div>
-  </div>
-</section>
-
-<!-- script 태그 순서가 중요합니다 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="admin.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
-<!-- 회원가입 비밀번호 입력 부분 -->
-<input type="password" id="regPw" placeholder="비밀번호 (6자 이상)" required>
-<button type="button" id="togglePwBtn">보임</button>
-
-<!-- 로그인 비밀번호 입력 부분 -->
-<input type="password" id="loginPw" placeholder="비밀번호" required>
-<button type="button" id="toggleLoginPwBtn">보임</button>
