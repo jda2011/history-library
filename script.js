@@ -246,6 +246,47 @@ async function checkAuthState() {
     };
   }
 
+  // 1. 화면 전환(View Navigation) 함수
+function showView(viewId) {
+  // 모든 뷰 섹션 가져오기
+  const views = document.querySelectorAll('.view-section');
+  
+  // 모든 섹션을 숨김 처리
+  views.forEach(view => {
+    view.style.display = 'none';
+  });
+
+  // 클릭한 ID의 섹션만 표시
+  const targetView = document.getElementById(viewId);
+  if (targetView) {
+    targetView.style.display = 'block';
+  }
+}
+
+// 2. 상단 상단 네비게이션 버튼 이벤트 연결
+document.addEventListener('DOMContentLoaded', () => {
+  // 로고 / 홈 버튼 클릭 시
+  const logoBtn = document.getElementById('logoBtn'); // 상단 로고/제목 ID
+  if (logoBtn) {
+    logoBtn.addEventListener('click', () => showView('homeView'));
+  }
+
+  // '내 방' 버튼 클릭 시
+  const myRoomBtn = document.getElementById('myRoomBtn'); // 또는 querySelector('.btn-myroom')
+  if (myRoomBtn) {
+    myRoomBtn.addEventListener('click', () => showView('myRoomView'));
+  }
+
+  // '관리자 방' 버튼 클릭 시
+  const adminBtn = document.getElementById('adminBtn'); // 또는 querySelector('.btn-admin')
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => showView('adminView'));
+  }
+  
+  // 기본 첫 화면 설정
+  showView('homeView');
+});
+
   // 마이페이지 정보 로드
   async function loadMyProfile() {
     try {
