@@ -245,3 +245,8 @@ function maskEmail(email) {
       }
     });
   }
+
+// 회원가입 성공 시 profiles 테이블에 닉네임과 이메일만 안전하게 저장!
+await supabaseClient.from('profiles').insert([
+  { nickname: nickname, email: email }
+]);
