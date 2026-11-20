@@ -37,9 +37,45 @@
     </section>
 
     <!-- 2. 내 방 (마이페이지) -->
+    <!-- 2. 내 방 (EBS 나의 학습방 스타일) -->
     <section id="myRoomView" class="view-section" style="display: none;">
-      <h2>🏠 <span id="myRoomNickname">사용자</span>님의 방</h2>
-      <p>이메일: <span id="myRoomEmail">-</span></p>
+      <div class="myroom-header-card">
+        <div class="profile-summary">
+          <div class="avatar-circle">🎓</div>
+          <div>
+            <h2 class="myroom-title"><span id="myRoomNickname">학생</span>님의 학습방</h2>
+            <p class="myroom-email" id="myRoomEmail">example@email.com</p>
+          </div>
+        </div>
+        <div class="point-badge-box">
+          <span class="point-label">보유 학습 포인트</span>
+          <strong class="point-value"><span id="myRoomPoints">0</span> P</strong>
+        </div>
+      </div>
+
+      <!-- 학습 요약 통계 -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-title">수강 중인 영상</span>
+          <strong class="stat-num" id="statInProgress">0개</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">학습 완료</span>
+          <strong class="stat-num" id="statCompleted">0개</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">전체 달성률</span>
+          <strong class="stat-num" id="statTotalRate">0%</strong>
+        </div>
+      </div>
+
+      <!-- 현재 학습 중인 영상 & 진도율 목록 -->
+      <div class="learning-section">
+        <h3 class="sub-section-title">📺 나의 학습 현황</h3>
+        <div id="myProgressList" class="progress-list">
+          <p class="empty-msg">아직 학습 중인 영상이 없습니다. 홈에서 영상을 시청해 보세요!</p>
+        </div>
+      </div>
     </section>
 
     <!-- 3. 관리자 센터 -->
