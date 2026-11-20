@@ -336,23 +336,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 관리자: 영상 등록 (async 필수!)
   const addVideoForm = document.getElementById('addVideoForm');
-  if (addVideoForm) {
-    addVideoForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const category = document.getElementById('videoCategory').value;
-      const title = document.getElementById('videoTitle').value;
-      const url = document.getElementById('videoUrl').value;
-      const description = document.getElementById('videoDesc').value;
+if (addVideoForm) {
+  addVideoForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const category = document.getElementById('videoCategory').value;
+    const title = document.getElementById('videoTitle').value;
+    const fileInput = document.getElementById('videoFile');
+    const description = document.getElementById('videoDesc').value;
+    const uploadBtn = document.getElementById('uploadVideoBtn');
 
-      if (!supabaseClient) return;
+    const file = fileInput.files[0];
+    if (!file) return alert('업로드할 영상 파일을 선택해 주세요!');
+    if (!supabaseClient) return;
 
-      const { error } = await supabaseClient.from('videos').insert([{ category, title, url, description }]);
-      if (error) {
-        alert('영상 게시 실패: ' + error.message);
-      } else {
-        alert('영상 게시 성공!');
-        addVideoForm.reset();
-        fetchVideos();
+    // 업로드 중 버튼 비활성화 안내
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = '영상 업로드 중... 잠시만 기다려 주세요 ⏳';
+
+    try {
+      // 한글 파일명 오류 방지를 위해 영문/숫자 고유 파일명 생성
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+      // 1) Supabase Storage ('history-videos' 버킷)에 영상 업로드
+      const { error: uploadError } = await supabaseClient.storage
+        .from('history-videos')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2) 업로드된 영상의 공개 URL 가져오기
+      const { data: urlData } = supabaseClient.storage
+        .from('history-videos')
+        .getPublicUrl(fileName);
+
+      // 3) videos 테이블에 강의 정보 저장
+      const { error: dbError } = await supabaseClient.from('videos').insert([{
+        category,
+        title,
+        url: urlData.publicUrl,
+        description
+      }]);
+
+      if (dbError) throw dbError;
+
+      alert('강의 영상이 성공적으로 게시되었습니다!');
+      addVideoForm.reset();
+      fetchVideos();
+    } catch (err) {
+      alert('업로드 실패: ' + err.message);
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = '영상 업로드 및 게시';
+    }
+  });
+}
+        fetchVideos(
+          card.innerHTML = `
+          <div class="video-thumbnail">
+            <video src="${video.url}" controls preload="metadata"></video>
+          </div>
+          <div class="video-info">
+            <span class="category-badge">${video.category || '기타'}</span>
+            <h3>${video.title}</h3>
+            <p>${video.description || ''}</p>
+            <button type="button" class="nav-btn btn-blue" style="margin: 10px 0 0 0; width: 100%;" 
+              onclick="startVideoStudy('${video.id}', '${video.title}', '${video.category || '기타'}')">
+              📖 내 학습방에 담기
+            </button>
+          </div>
+        `;
+        );
       }
     });
   }
