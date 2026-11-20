@@ -197,3 +197,180 @@ body {
   color: #1e293b;
   font-weight: 600;
 }
+
+/* ==========================================
+   EBS 스타일 개인 학습방 (My Room)
+========================================== */
+.myroom-header-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar-circle {
+  width: 56px;
+  height: 56px;
+  background-color: #eff6ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28px;
+}
+
+.myroom-title {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  color: #1e293b;
+}
+
+.myroom-email {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.point-badge-box {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  padding: 14px 24px;
+  border-radius: 12px;
+  text-align: right;
+}
+
+.point-label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.point-value {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+/* 통계 3단 카드 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.stat-title {
+  display: block;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.stat-num {
+  font-size: 20px;
+  color: #0f172a;
+}
+
+/* 진도율 리스트 카드 */
+.sub-section-title {
+  font-size: 18px;
+  margin-bottom: 14px;
+  color: #1e293b;
+}
+
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.progress-item-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+}
+
+.progress-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.status-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-badge.ing {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge.done {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background-color: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.progress-bar-fill.done {
+  background-color: #10b981;
+}
+
+.progress-item-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 8px;
+}
+
+.btn-complete-study {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
