@@ -1,7 +1,7 @@
 // ==========================================
 // 0. Supabase 클라이언트 초기화
 // ==========================================
-const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co/rest/v1/'; // 본인 Supabase URL 입력
+const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인 Supabase URL 입력
 const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';                   // 본인 Supabase Anon Key 입력
 
 let supabaseClient = null;
