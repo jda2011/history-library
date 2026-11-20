@@ -30,17 +30,20 @@
 
   <!-- 메인 화면 컨텐츠 영역 -->
   <main class="content-area">
-    <!-- 1. 홈 화면 (시대별 카테고리 필터 포함) -->
+    <!-- 1. 홈 화면 (세분화된 시대별/테마별 카테고리 필터) -->
     <section id="homeView" class="view-section">
-      <h2 class="section-title">📚 역사 동영상 목록</h2>
+      <h2 class="section-title">📚 역사 동영상 도서관</h2>
 
       <div class="category-filter-bar">
         <button type="button" class="filter-btn active" onclick="filterVideos('전체', this)">전체</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('선사시대', this)">선사시대</button>
         <button type="button" class="filter-btn" onclick="filterVideos('고조선·삼국시대', this)">고조선·삼국시대</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('남북국시대', this)">남북국시대</button>
         <button type="button" class="filter-btn" onclick="filterVideos('고려시대', this)">고려시대</button>
         <button type="button" class="filter-btn" onclick="filterVideos('조선시대', this)">조선시대</button>
         <button type="button" class="filter-btn" onclick="filterVideos('근현대사', this)">근현대사</button>
         <button type="button" class="filter-btn" onclick="filterVideos('세계사', this)">세계사</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('역사테마·인물', this)">역사테마·인물</button>
       </div>
 
       <div id="videoList" class="video-grid"></div>
@@ -85,11 +88,11 @@
       </div>
     </section>
 
-    <!-- 3. 관리자 센터 (영상 업로드 + 퀴즈 등록 + 관리) -->
+    <!-- 3. 관리자 센터 (영상 업로드 + 퀴즈 추가/삭제 기능 포함) -->
     <section id="adminView" class="view-section" style="display: none;">
       <div class="admin-header">
         <h2>🛠️ 관리자 스튜디오</h2>
-        <p>직접 제작한 역사 강의 영상을 업로드하고 퀴즈를 관리하세요.</p>
+        <p>강의 영상을 업로드하고, 퀴즈를 자유롭게 추가하거나 삭제하세요.</p>
       </div>
 
       <div class="admin-grid">
@@ -99,14 +102,17 @@
             <h3>🎬 새 강의 영상 올리기</h3>
             <form id="addVideoForm" class="admin-form">
               <div class="input-group">
-                <label for="videoCategory">시대 카테고리</label>
+                <label for="videoCategory">세분화된 카테고리</label>
                 <select id="videoCategory" required>
                   <option value="">카테고리를 선택하세요</option>
+                  <option value="선사시대">선사시대</option>
                   <option value="고조선·삼국시대">고조선·삼국시대</option>
+                  <option value="남북국시대">남북국시대</option>
                   <option value="고려시대">고려시대</option>
                   <option value="조선시대">조선시대</option>
                   <option value="근현대사">근현대사</option>
                   <option value="세계사">세계사</option>
+                  <option value="역사테마·인물">역사테마·인물</option>
                 </select>
               </div>
 
@@ -131,7 +137,7 @@
 
           <!-- 퀴즈 등록 카드 -->
           <div class="admin-card">
-            <h3>❓ 강의별 퀴즈 등록</h3>
+            <h3>❓ 강의별 퀴즈 추가</h3>
             <form id="addQuizForm" class="admin-form">
               <div class="input-group">
                 <label for="quizVideoSelect">연결할 영상</label>
@@ -141,7 +147,7 @@
               </div>
               <div class="input-group">
                 <label for="quizQuestion">퀴즈 질문</label>
-                <input type="text" id="quizQuestion" placeholder="예: 훈민정음을 창제한 왕은 누구인가요?" required>
+                <input type="text" id="quizQuestion" placeholder="예: 훈민정음을 창제한 왕은?" required>
               </div>
               <div class="input-group">
                 <label>보기 4개</label>
@@ -154,22 +160,30 @@
                 <label for="quizAnswer">정답 번호 (1~4)</label>
                 <input type="number" id="quizAnswer" min="1" max="4" placeholder="예: 1" required>
               </div>
-              <button type="submit" class="btn-submit btn-green">퀴즈 등록하기</button>
+              <button type="submit" class="btn-submit btn-green">퀴즈 추가하기</button>
             </form>
           </div>
         </div>
 
-        <!-- 오른쪽: 게시된 영상 목록 및 삭제 -->
-        <div class="admin-card">
-          <h3>📂 게시된 강의 목록</h3>
-          <div id="adminVideoList" class="admin-list-box">
-            <p class="empty-msg">불러오는 중...</p>
+        <!-- 오른쪽: 게시된 강의 목록 및 퀴즈 관리 목록 -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="admin-card">
+            <h3>📂 게시된 강의 목록</h3>
+            <div id="adminVideoList" class="admin-list-box">
+              <p class="empty-msg">불러오는 중...</p>
+            </div>
+          </div>
+
+          <!-- 등록된 퀴즈 목록 및 삭제 카드 -->
+          <div class="admin-card">
+            <h3>🗑️ 등록된 퀴즈 관리</h3>
+            <div id="adminQuizList" class="admin-list-box">
+              <p class="empty-msg">영상을 선택하면 등록된 퀴즈가 표시됩니다.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
-  </main>
-
   <!-- ================= 모달 창 영역 ================= -->
 
   <!-- 1. 로그인 모달 -->
