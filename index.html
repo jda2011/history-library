@@ -69,13 +69,35 @@
         </div>
 
         <!-- 기존 loginModal 내부의 </form> 바로 아래에 추가 -->
-      <div class="auth-links">
-        <a href="#" onclick="switchToResetModal(event)">비밀번호를 잊으셨나요?</a>
-      </div>
-    </form> <!-- 기존 form 닫는 태그 -->
+      <!-- 1. loginModal 안쪽의 auth-links 부분을 아래처럼 수정 -->
+        <div class="auth-links">
+          <a href="#" onclick="switchModal('loginModal', 'findEmailModal', event)">이메일 찾기</a>
+          <span> | </span>
+          <a href="#" onclick="switchModal('loginModal', 'resetPasswordModal', event)">비밀번호 찾기</a>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 
+<!-- 2. 새로 추가할 닉네임으로 이메일 찾기 모달 -->
+  <div id="findEmailModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal('findEmailModal')">&times;</span>
+      <h2 class="modal-title">이메일 찾기</h2>
+      <p class="modal-desc">가입 시 등록한 닉네임을 입력해 주세요.</p>
+      
+      <form id="findEmailForm">
+        <div class="input-group">
+          <label for="findNickname">닉네임</label>
+          <input type="text" id="findNickname" placeholder="닉네임 입력" required>
+        </div>
+        <button type="submit" class="btn-submit btn-blue">이메일 조회하기</button>
+      </form>
+
+      <!-- 찾은 결과가 표시될 영역 -->
+      <div id="foundEmailResult" class="result-box" style="display: none;"></div>
+    </div>
+  </div>
 <!-- 새로 추가할 비밀번호 재설정 모달 -->
 <div id="resetPasswordModal" class="modal" style="display: none;">
   <div class="modal-content">
