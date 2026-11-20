@@ -79,8 +79,58 @@
     </section>
 
     <!-- 3. 관리자 센터 -->
+    <!-- 3. 관리자 센터 (직접 제작 영상 업로드 & 관리) -->
     <section id="adminView" class="view-section" style="display: none;">
-      <h2>🛠️ 관리자 센터</h2>
+      <div class="admin-header">
+        <h2>🛠️ 관리자 스튜디오</h2>
+        <p>직접 제작한 역사 강의 영상을 업로드하고 퀴즈를 관리하세요.</p>
+      </div>
+
+      <div class="admin-grid">
+        <!-- 왼쪽: 새 영상 파일 업로드 카드 -->
+        <div class="admin-card">
+          <h3>🎬 새 강의 영상 올리기</h3>
+          <form id="addVideoForm" class="admin-form">
+            <div class="input-group">
+              <label for="videoCategory">시대 카테고리</label>
+              <select id="videoCategory" required>
+                <option value="">카테고리를 선택하세요</option>
+                <option value="고조선·삼국시대">고조선·삼국시대</option>
+                <option value="고려시대">고려시대</option>
+                <option value="조선시대">조선시대</option>
+                <option value="근현대사">근현대사</option>
+                <option value="세계사">세계사</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label for="videoTitle">강의 제목</label>
+              <input type="text" id="videoTitle" placeholder="예: 세종대왕과 훈민정음 창제" required>
+            </div>
+
+            <div class="input-group">
+              <label for="videoFile">영상 파일 선택 (.mp4)</label>
+              <input type="file" id="videoFile" accept="video/mp4,video/*" required>
+            </div>
+
+            <div class="input-group">
+              <label for="videoDesc">강의 설명</label>
+              <textarea id="videoDesc" rows="3" placeholder="영상 핵심 내용을 간단히 적어주세요."></textarea>
+            </div>
+
+            <button type="submit" id="uploadVideoBtn" class="btn-submit btn-blue">영상 업로드 및 게시</button>
+          </form>
+        </div>
+
+        <!-- 오른쪽: 업로드된 영상 관리 목록 -->
+        <div class="admin-card">
+          <h3>📂 게시된 강의 목록</h3>
+          <div id="adminVideoList" class="admin-list-box">
+            <p class="empty-msg">불러오는 중...</p>
+          </div>
+        </div>
+      </div>
+    </section>
       <!-- 영상 등록 폼 -->
       <form id="addVideoForm" class="admin-form">
         <h3>영상 등록</h3>
