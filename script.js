@@ -1,8 +1,8 @@
 // ==========================================
 // 0. Supabase 클라이언트 초기화
 // ==========================================
-const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인 Supabase URL 입력
-const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';                   // 본인 Supabase Anon Key 입력
+const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인 URL
+const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';                   // 본인 Anon Key
 
 let supabaseClient = null;
 if (typeof supabase !== 'undefined') {
@@ -103,6 +103,52 @@ async function loadUserProfile() {
   }
 }
 
+let allVideosData = [];
+
+function renderVideoCards(videosToRender) {
+  const videoListContainer = document.getElementById('videoList');
+  if (!videoListContainer) return;
+
+  videoListContainer.innerHTML = '';
+  if (!videosToRender || videosToRender.length === 0) {
+    videoListContainer.innerHTML = '<p class="empty-msg" style="grid-column: 1/-1; text-align:center;">해당 카테고리에 등록된 영상이 없습니다.</p>';
+    return;
+  }
+
+  videosToRender.forEach(video => {
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.innerHTML = `
+      <div class="video-thumbnail">
+        <video src="${video.url}" controls preload="metadata"></video>
+      </div>
+      <div class="video-info">
+        <span class="category-badge">${video.category || '기타'}</span>
+        <h3>${video.title}</h3>
+        <p>${video.description || ''}</p>
+        <button type="button" class="nav-btn btn-blue" style="margin: 0; width: 100%;" 
+          onclick="startVideoStudy('${video.id}', '${video.title}', '${video.category || '기타'}')">
+          📖 내 학습방에 담기
+        </button>
+      </div>
+    `;
+    videoListContainer.appendChild(card);
+  });
+}
+
+function filterVideos(selectedCategory, btnElement) {
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  if (btnElement) btnElement.classList.add('active');
+
+  if (selectedCategory === '전체') {
+    renderVideoCards(allVideosData);
+  } else {
+    const filtered = allVideosData.filter(video => video.category === selectedCategory);
+    renderVideoCards(filtered);
+  }
+}
+window.filterVideos = filterVideos;
+
 async function fetchVideos() {
   if (!supabaseClient) return;
 
@@ -116,54 +162,28 @@ async function fetchVideos() {
     return;
   }
 
-  const videoListContainer = document.getElementById('videoList');
-  if (videoListContainer) {
-    videoListContainer.innerHTML = '';
-    if (!videos || videos.length === 0) {
-      videoListContainer.innerHTML = '<p class="empty-msg">등록된 영상이 없습니다.</p>';
-    } else {
-      videos.forEach(video => {
-        const card = document.createElement('div');
-        card.className = 'video-card';
-        card.innerHTML = `
-          <div class="video-thumbnail">
-            <iframe src="${video.url}" frameborder="0" allowfullscreen></iframe>
-          </div>
-          <div class="video-info">
-            <span class="category-badge">${video.category || '기타'}</span>
-            <h3>${video.title}</h3>
-            <p>${video.description || ''}</p>
-          </div>
-        `;
-        videoListContainer.appendChild(card);
-      });
-    }
-  }
-
-  const quizSelect = document.getElementById('quizVideoSelect');
-  if (quizSelect && videos) {
-    quizSelect.innerHTML = '<option value="">영상을 선택하세요</option>';
-    videos.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = v.title;
-      quizSelect.appendChild(opt);
-    });
-  }
+  allVideosData = videos || [];
+  renderVideoCards(allVideosData);
 
   const adminList = document.getElementById('adminVideoList');
-  if (adminList && videos) {
+  if (adminList) {
     adminList.innerHTML = '';
-    videos.forEach(v => {
-      const item = document.createElement('div');
-      item.className = 'admin-video-item';
-      item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;';
-      item.innerHTML = `
-        <span>[${v.category || '기타'}] ${v.title}</span>
-        <button type="button" onclick="deleteVideo('${v.id}')" style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">삭제</button>
-      `;
-      adminList.appendChild(item);
-    });
+    if (allVideosData.length === 0) {
+      adminList.innerHTML = '<p class="empty-msg">게시된 강의가 없습니다.</p>';
+    } else {
+      allVideosData.forEach(v => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9;';
+        item.innerHTML = `
+          <div>
+            <span class="category-badge" style="margin-bottom:4px;">${v.category || '기타'}</span>
+            <div style="font-weight:600; font-size:14px;">${v.title}</div>
+          </div>
+          <button type="button" onclick="deleteVideo('${v.id}')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-size:12px;">삭제</button>
+        `;
+        adminList.appendChild(item);
+      });
+    }
   }
 }
 
@@ -182,14 +202,149 @@ async function deleteVideo(videoId) {
 }
 window.deleteVideo = deleteVideo;
 
+async function loadMyRoomData() {
+  if (!supabaseClient || !supabaseClient.auth) return;
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+
+  const { data: profileData } = await supabaseClient
+    .from('profiles')
+    .select('points')
+    .eq('email', user.email)
+    .single();
+
+  const currentPoints = profileData?.points || 0;
+  const pointsElem = document.getElementById('myRoomPoints');
+  if (pointsElem) pointsElem.textContent = currentPoints.toLocaleString();
+
+  const { data: progressList } = await supabaseClient
+    .from('user_progress')
+    .select('*')
+    .eq('user_email', user.email)
+    .order('updated_at', { ascending: false });
+
+  const container = document.getElementById('myProgressList');
+  if (!container) return;
+
+  if (!progressList || progressList.length === 0) {
+    container.innerHTML = '<p class="empty-msg">아직 학습 중인 영상이 없습니다. 홈에서 영상을 시청해 보세요!</p>';
+    return;
+  }
+
+  const completedCount = progressList.filter(item => item.is_completed).length;
+  const inProgressCount = progressList.length - completedCount;
+  const totalRate = Math.round((completedCount / progressList.length) * 100);
+
+  const statInProgress = document.getElementById('statInProgress');
+  const statCompleted = document.getElementById('statCompleted');
+  const statTotalRate = document.getElementById('statTotalRate');
+
+  if (statInProgress) statInProgress.textContent = `${inProgressCount}개`;
+  if (statCompleted) statCompleted.textContent = `${completedCount}개`;
+  if (statTotalRate) statTotalRate.textContent = `${totalRate}%`;
+
+  container.innerHTML = '';
+  progressList.forEach(item => {
+    const isDone = item.is_completed;
+    const card = document.createElement('div');
+    card.className = 'progress-item-card';
+    card.innerHTML = `
+      <div class="progress-item-top">
+        <div>
+          <span class="category-badge">${item.category || '역사'}</span>
+          <strong style="margin-left:8px; font-size:16px;">${item.video_title}</strong>
+        </div>
+        <span class="status-badge ${isDone ? 'done' : 'ing'}">
+          ${isDone ? '✅ 학습 완료' : '▶️ 학습 중'}
+        </span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill ${isDone ? 'done' : ''}" style="width: ${item.progress}%;"></div>
+      </div>
+      <div class="progress-item-bottom">
+        <span>진도율: <strong>${item.progress}%</strong></span>
+        ${!isDone 
+          ? `<button type="button" class="btn-complete-study" onclick="completeVideoStudy('${item.id}')">학습 완료하기 (+50P)</button>` 
+          : `<span>포인트 지급 완료</span>`
+        }
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+window.loadMyRoomData = loadMyRoomData;
+
+async function startVideoStudy(videoId, videoTitle, category) {
+  if (!supabaseClient) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    alert('로그인 후 학습 기록을 남길 수 있습니다!');
+    openModal('loginModal');
+    return;
+  }
+
+  const { data: existing } = await supabaseClient
+    .from('user_progress')
+    .select('*')
+    .eq('user_email', user.email)
+    .eq('video_id', videoId);
+
+  if (!existing || existing.length === 0) {
+    await supabaseClient.from('user_progress').insert([{
+      user_email: user.email,
+      video_id: videoId,
+      video_title: videoTitle,
+      category: category,
+      progress: 50,
+      is_completed: false
+    }]);
+    alert(`'${videoTitle}' 학습이 시작되었습니다! 내 학습방에서 진도를 확인할 수 있어요.`);
+  } else {
+    alert('이미 내 학습방에 등록된 영상입니다!');
+  }
+  loadMyRoomData();
+}
+window.startVideoStudy = startVideoStudy;
+
+async function completeVideoStudy(progressId) {
+  if (!supabaseClient) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+
+  await supabaseClient
+    .from('user_progress')
+    .update({ progress: 100, is_completed: true })
+    .eq('id', progressId);
+
+  const { data: profile } = await supabaseClient
+    .from('profiles')
+    .select('points')
+    .eq('email', user.email)
+    .single();
+
+  const newPoints = (profile?.points || 0) + 50;
+  await supabaseClient
+    .from('profiles')
+    .update({ points: newPoints })
+    .eq('email', user.email);
+
+  alert('학습을 완료하여 50 포인트가 적립되었습니다!');
+  loadMyRoomData();
+}
+window.completeVideoStudy = completeVideoStudy;
+
 // ==========================================
 // 3. 메인 이벤트 리스너 (DOM 로드 후 실행)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
   loadUserProfile();
   fetchVideos();
+  loadMyRoomData();
 
-  // 로그아웃 버튼 처리
+  // 최초 접속 시 홈 화면만 보이도록 강제 설정
+  showView('homeView');
+
   document.body.addEventListener('click', async (e) => {
     const target = e.target;
     const text = target.textContent ? target.textContent.trim() : '';
@@ -206,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 회원가입 제출 (async 필수!)
   const signupForm = document.getElementById('signupForm');
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
@@ -240,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 로그인 제출 (async 필수!)
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -264,7 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 닉네임으로 이메일 찾기 제출 (async 필수!)
   const findEmailForm = document.getElementById('findEmailForm');
   if (findEmailForm) {
     findEmailForm.addEventListener('submit', async (e) => {
@@ -279,20 +431,21 @@ document.addEventListener('DOMContentLoaded', () => {
         .select('email')
         .eq('nickname', nicknameInput);
 
-      resultBox.style.display = 'block';
+      if (resultBox) {
+        resultBox.style.display = 'block';
 
-      if (error || !data || data.length === 0) {
-        resultBox.style.color = '#ef4444';
-        resultBox.textContent = '일치하는 닉네임의 계정을 찾을 수 없습니다.';
-      } else {
-        resultBox.style.color = '#1e293b';
-        const maskedList = data.map(row => maskEmail(row.email)).join(', ');
-        resultBox.innerHTML = `가입된 이메일: <br><span style="color:#3b82f6; font-size:16px;">${maskedList}</span>`;
+        if (error || !data || data.length === 0) {
+          resultBox.style.color = '#ef4444';
+          resultBox.textContent = '일치하는 닉네임의 계정을 찾을 수 없습니다.';
+        } else {
+          resultBox.style.color = '#1e293b';
+          const maskedList = data.map(row => maskEmail(row.email)).join(', ');
+          resultBox.innerHTML = `가입된 이메일: <br><span style="color:#3b82f6; font-size:16px;">${maskedList}</span>`;
+        }
       }
     });
   }
 
-  // 비밀번호 재설정 메일 발송 제출 (async 필수!)
   const resetPasswordForm = document.getElementById('resetPasswordForm');
   if (resetPasswordForm) {
     resetPasswordForm.addEventListener('submit', async (e) => {
@@ -315,7 +468,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 비밀번호 변경 링크 복귀 감지 (async 필수!)
   if (supabaseClient && supabaseClient.auth) {
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
@@ -334,251 +486,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 관리자: 영상 등록 (async 필수!)
   const addVideoForm = document.getElementById('addVideoForm');
-if (addVideoForm) {
-  addVideoForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const category = document.getElementById('videoCategory').value;
-    const title = document.getElementById('videoTitle').value;
-    const fileInput = document.getElementById('videoFile');
-    const description = document.getElementById('videoDesc').value;
-    const uploadBtn = document.getElementById('uploadVideoBtn');
-
-    const file = fileInput.files[0];
-    if (!file) return alert('업로드할 영상 파일을 선택해 주세요!');
-    if (!supabaseClient) return;
-
-    // 업로드 중 버튼 비활성화 안내
-    uploadBtn.disabled = true;
-    uploadBtn.textContent = '영상 업로드 중... 잠시만 기다려 주세요 ⏳';
-
-    try {
-      // 한글 파일명 오류 방지를 위해 영문/숫자 고유 파일명 생성
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
-
-      // 1) Supabase Storage ('history-videos' 버킷)에 영상 업로드
-      const { error: uploadError } = await supabaseClient.storage
-        .from('history-videos')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      // 2) 업로드된 영상의 공개 URL 가져오기
-      const { data: urlData } = supabaseClient.storage
-        .from('history-videos')
-        .getPublicUrl(fileName);
-
-      // 3) videos 테이블에 강의 정보 저장
-      const { error: dbError } = await supabaseClient.from('videos').insert([{
-        category,
-        title,
-        url: urlData.publicUrl,
-        description
-      }]);
-
-      if (dbError) throw dbError;
-
-      alert('강의 영상이 성공적으로 게시되었습니다!');
-      addVideoForm.reset();
-      fetchVideos();
-    } catch (err) {
-      alert('업로드 실패: ' + err.message);
-    } finally {
-      uploadBtn.disabled = false;
-      uploadBtn.textContent = '영상 업로드 및 게시';
-    }
-  });
-}
-        fetchVideos(
-          card.innerHTML = `
-          <div class="video-thumbnail">
-            <video src="${video.url}" controls preload="metadata"></video>
-          </div>
-          <div class="video-info">
-            <span class="category-badge">${video.category || '기타'}</span>
-            <h3>${video.title}</h3>
-            <p>${video.description || ''}</p>
-            <button type="button" class="nav-btn btn-blue" style="margin: 10px 0 0 0; width: 100%;" 
-              onclick="startVideoStudy('${video.id}', '${video.title}', '${video.category || '기타'}')">
-              📖 내 학습방에 담기
-            </button>
-          </div>
-        `;
-        );
-      }
-    });
-  }
-
-  // 관리자: 퀴즈 등록 (async 필수!)
-  const addQuizForm = document.getElementById('addQuizForm');
-  if (addQuizForm) {
-    addQuizForm.addEventListener('submit', async (e) => {
+  if (addVideoForm) {
+    addVideoForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const video_id = document.getElementById('quizVideoSelect').value;
-      const question = document.getElementById('quizQuestion').value;
-      const option1 = document.getElementById('quizOpt1').value;
-      const option2 = document.getElementById('quizOpt2').value;
-      const option3 = document.getElementById('quizOpt3').value;
-      const option4 = document.getElementById('quizOpt4').value;
-      const answer = document.getElementById('quizAnswer').value;
+      const category = document.getElementById('videoCategory').value;
+      const title = document.getElementById('videoTitle').value;
+      const fileInput = document.getElementById('videoFile');
+      const description = document.getElementById('videoDesc').value;
+      const uploadBtn = document.getElementById('uploadVideoBtn');
 
-      if (!video_id) return alert('연결할 영상을 선택해 주세요.');
+      const file = fileInput.files[0];
+      if (!file) return alert('업로드할 영상 파일을 선택해 주세요!');
       if (!supabaseClient) return;
 
-      const { error } = await supabaseClient.from('quizzes').insert([
-        { video_id, question, option1, option2, option3, option4, answer: parseInt(answer, 10) }
-      ]);
-      if (error) {
-        alert('문제 게시 실패: ' + error.message);
-      } else {
-        alert('문제 게시 성공!');
-        addQuizForm.reset();
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = '영상 업로드 중... 잠시만 기다려 주세요 ';
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from('history-videos')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabaseClient.storage
+          .from('history-videos')
+          .getPublicUrl(fileName);
+
+        const { error: dbError } = await supabaseClient.from('videos').insert([{
+          category,
+          title,
+          url: urlData.publicUrl,
+          description
+        }]);
+
+        if (dbError) throw dbError;
+
+        alert('강의 영상이 성공적으로 게시되었습니다!');
+        addVideoForm.reset();
+        fetchVideos();
+      } catch (err) {
+        alert('업로드 실패: ' + err.message);
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = '영상 업로드 및 게시';
       }
     });
   }
-
-  showView('homeView');
 });
-
-// ==========================================
-// 개인 방(EBS 학습방) 데이터 로드 및 진도 업데이트
-// ==========================================
-
-async function loadMyRoomData() {
-  if (!supabaseClient || !supabaseClient.auth) return;
-
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-
-  // 1) 보유 포인트 조회 (profiles 테이블)
-  const { data: profileData } = await supabaseClient
-    .from('profiles')
-    .select('points')
-    .eq('email', user.email)
-    .single();
-
-  const currentPoints = profileData?.points || 0;
-  const pointsElem = document.getElementById('myRoomPoints');
-  if (pointsElem) pointsElem.textContent = currentPoints.toLocaleString();
-
-  // 2) 내 학습 진도 목록 조회 (user_progress 테이블)
-  const { data: progressList } = await supabaseClient
-    .from('user_progress')
-    .select('*')
-    .eq('user_email', user.email)
-    .order('updated_at', { ascending: false });
-
-  const container = document.getElementById('myProgressList');
-  if (!container) return;
-
-  if (!progressList || progressList.length === 0) {
-    container.innerHTML = '<p class="empty-msg">아직 학습 중인 영상이 없습니다. 홈에서 영상을 시청해 보세요!</p>';
-    return;
-  }
-
-  // 통계 계산
-  const completedCount = progressList.filter(item => item.is_completed).length;
-  const inProgressCount = progressList.length - completedCount;
-  const totalRate = Math.round((completedCount / progressList.length) * 100);
-
-  document.getElementById('statInProgress').textContent = `${inProgressCount}개`;
-  document.getElementById('statCompleted').textContent = `${completedCount}개`;
-  document.getElementById('statTotalRate').textContent = `${totalRate}%`;
-
-  // 목록 렌더링
-  container.innerHTML = '';
-  progressList.forEach(item => {
-    const isDone = item.is_completed;
-    const card = document.createElement('div');
-    card.className = 'progress-item-card';
-    card.innerHTML = `
-      <div class="progress-item-top">
-        <div>
-          <span class="category-badge">${item.category || '역사'}</span>
-          <strong style="margin-left:8px; font-size:16px;">${item.video_title}</strong>
-        </div>
-        <span class="status-badge ${isDone ? 'done' : 'ing'}">
-          ${isDone ? '✅ 학습 완료' : '▶️ 학습 중'}
-        </span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill ${isDone ? 'done' : ''}" style="width: ${item.progress}%;"></div>
-      </div>
-      <div class="progress-item-bottom">
-        <span>진도율: <strong>${item.progress}%</strong></span>
-        ${!isDone 
-          ? `<button type="button" class="btn-complete-study" onclick="completeVideoStudy('${item.id}')">학습 완료하기 (+50P)</button>` 
-          : `<span>포인트 지급 완료</span>`
-        }
-      </div>
-    `;
-    container.appendChild(card);
-  });
-}
-window.loadMyRoomData = loadMyRoomData;
-
-// 홈에서 영상 '학습하기' 클릭 시 진도 기록 시작 (진도율 50%로 등록)
-async function startVideoStudy(videoId, videoTitle, category) {
-  if (!supabaseClient) return;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert('로그인 후 학습 기록을 남길 수 있습니다!');
-    openModal('loginModal');
-    return;
-  }
-
-  // 이미 기록이 있는지 확인
-  const { data: existing } = await supabaseClient
-    .from('user_progress')
-    .select('*')
-    .eq('user_email', user.email)
-    .eq('video_id', videoId);
-
-  if (!existing || existing.length === 0) {
-    await supabaseClient.from('user_progress').insert([{
-      user_email: user.email,
-      video_id: videoId,
-      video_title: videoTitle,
-      category: category,
-      progress: 50,
-      is_completed: false
-    }]);
-    alert(`'${videoTitle}' 학습이 시작되었습니다! 내 학습방에서 진도를 확인할 수 있어요.`);
-  } else {
-    alert('이미 내 학습방에 등록된 영상입니다!');
-  }
-  loadMyRoomData();
-}
-window.startVideoStudy = startVideoStudy;
-
-// 학습 완료 처리 및 +50 포인트 적립
-async function completeVideoStudy(progressId) {
-  if (!supabaseClient) return;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) return;
-
-  // 1) 진도율 100% 및 완료 처리
-  await supabaseClient
-    .from('user_progress')
-    .update({ progress: 100, is_completed: true })
-    .eq('id', progressId);
-
-  // 2) 현재 포인트 가져와서 +50점 추가
-  const { data: profile } = await supabaseClient
-    .from('profiles')
-    .select('points')
-    .eq('email', user.email)
-    .single();
-
-  const newPoints = (profile?.points || 0) + 50;
-  await supabaseClient
-    .from('profiles')
-    .update({ points: newPoints })
-    .eq('email', user.email);
-
-  alert('🎉 학습을 완료하여 50 포인트가 적립되었습니다!');
-  loadMyRoomData();
-}
-window.completeVideoStudy = completeVideoStudy;
