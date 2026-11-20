@@ -1,8 +1,8 @@
 // ==========================================
 // 0. Supabase 클라이언트 초기화
 // ==========================================
-const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인 URL
-const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc';                   // 본인 Anon Key
+const SUPABASE_URL = 'https://fmjbtdmafpxsnymhtxkp.supabase.co'; // 본인 URL 
+const SUPABASE_ANON_KEY = 'sb_publishable_O-u3pUx9ni2z6dQup2ZcxQ_G6m68uAc'; // 본인 Anon Key
 
 let supabaseClient = null;
 if (typeof supabase !== 'undefined') {
@@ -45,13 +45,6 @@ function switchModal(fromId, toId, e) {
 }
 window.switchModal = switchModal;
 
-function switchToResetModal(e) {
-  if (e) e.preventDefault();
-  closeModal('loginModal');
-  openModal('resetPasswordModal');
-}
-window.switchToResetModal = switchToResetModal;
-
 function togglePassword(inputId, btn) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -76,7 +69,7 @@ function maskEmail(email) {
 }
 
 // ==========================================
-// 2. Supabase 데이터 로드 및 삭제 함수
+// 2. Supabase 데이터 로드 및 관리 함수
 // ==========================================
 
 async function loadUserProfile() {
@@ -165,6 +158,19 @@ async function fetchVideos() {
   allVideosData = videos || [];
   renderVideoCards(allVideosData);
 
+  // 관리자 퀴즈 등록용 셀렉트박스 갱신
+  const quizSelect = document.getElementById('quizVideoSelect');
+  if (quizSelect) {
+    quizSelect.innerHTML = '<option value="">영상을 선택하세요</option>';
+    allVideosData.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v.id;
+      opt.textContent = `[${v.category}] ${v.title}`;
+      quizSelect.appendChild(opt);
+    });
+  }
+
+  // 관리자 화면 게시 목록 갱신
   const adminList = document.getElementById('adminVideoList');
   if (adminList) {
     adminList.innerHTML = '';
@@ -329,7 +335,7 @@ async function completeVideoStudy(progressId) {
     .update({ points: newPoints })
     .eq('email', user.email);
 
-  alert('학습을 완료하여 50 포인트가 적립되었습니다!');
+  alert('🎉 학습을 완료하여 50 포인트가 적립되었습니다!');
   loadMyRoomData();
 }
 window.completeVideoStudy = completeVideoStudy;
@@ -341,10 +347,9 @@ document.addEventListener('DOMContentLoaded', () => {
   loadUserProfile();
   fetchVideos();
   loadMyRoomData();
-
-  // 최초 접속 시 홈 화면만 보이도록 강제 설정
   showView('homeView');
 
+  // 로그아웃 처리
   document.body.addEventListener('click', async (e) => {
     const target = e.target;
     const text = target.textContent ? target.textContent.trim() : '';
@@ -361,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // 회원가입 제출
   const signupForm = document.getElementById('signupForm');
   if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
@@ -370,10 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nickname = document.getElementById('signupNickname').value;
       const age = document.getElementById('signupAge')?.value;
 
-      if (!supabaseClient) {
-        alert('Supabase 키 설정이 필요합니다.');
-        return;
-      }
+      if (!supabaseClient) return;
 
       const { data, error } = await supabaseClient.auth.signUp({
         email,
@@ -394,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 로그인 제출
   const loginForm = document.getElementById('loginForm');
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -401,10 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
 
-      if (!supabaseClient) {
-        alert('Supabase 키 설정이 필요합니다.');
-        return;
-      }
+      if (!supabaseClient) return;
 
       const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
@@ -417,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 이메일 찾기 제출
   const findEmailForm = document.getElementById('findEmailForm');
   if (findEmailForm) {
     findEmailForm.addEventListener('submit', async (e) => {
@@ -446,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 비밀번호 재설정 메일 발송
   const resetPasswordForm = document.getElementById('resetPasswordForm');
   if (resetPasswordForm) {
     resetPasswordForm.addEventListener('submit', async (e) => {
@@ -468,6 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 비밀번호 변경 링크 복귀 감지
   if (supabaseClient && supabaseClient.auth) {
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       if (event === 'PASSWORD_RECOVERY') {
@@ -486,6 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // 관리자: 영상 업로드
   const addVideoForm = document.getElementById('addVideoForm');
   if (addVideoForm) {
     addVideoForm.addEventListener('submit', async (e) => {
@@ -501,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!supabaseClient) return;
 
       uploadBtn.disabled = true;
-      uploadBtn.textContent = '영상 업로드 중... 잠시만 기다려 주세요 ';
+      uploadBtn.textContent = '영상 업로드 중... 잠시만 기다려 주세요 ⏳';
 
       try {
         const fileExt = file.name.split('.').pop();
@@ -526,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (dbError) throw dbError;
 
-        alert('강의 영상이 성공적으로 게시되었습니다!');
+        alert('🎉 직접 제작한 강의 영상이 성공적으로 게시되었습니다!');
         addVideoForm.reset();
         fetchVideos();
       } catch (err) {
@@ -534,6 +539,35 @@ document.addEventListener('DOMContentLoaded', () => {
       } finally {
         uploadBtn.disabled = false;
         uploadBtn.textContent = '영상 업로드 및 게시';
+      }
+    });
+  }
+
+  // 관리자: 퀴즈 등록
+  const addQuizForm = document.getElementById('addQuizForm');
+  if (addQuizForm) {
+    addQuizForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const video_id = document.getElementById('quizVideoSelect').value;
+      const question = document.getElementById('quizQuestion').value;
+      const option1 = document.getElementById('quizOpt1').value;
+      const option2 = document.getElementById('quizOpt2').value;
+      const option3 = document.getElementById('quizOpt3').value;
+      const option4 = document.getElementById('quizOpt4').value;
+      const answer = document.getElementById('quizAnswer').value;
+
+      if (!video_id) return alert('연결할 영상을 선택해 주세요.');
+      if (!supabaseClient) return;
+
+      const { error } = await supabaseClient.from('quizzes').insert([
+        { video_id, question, option1, option2, option3, option4, answer: parseInt(answer, 10) }
+      ]);
+
+      if (error) {
+        alert('퀴즈 등록 실패: ' + error.message);
+      } else {
+        alert('퀴즈가 성공적으로 등록되었습니다!');
+        addQuizForm.reset();
       }
     });
   }
