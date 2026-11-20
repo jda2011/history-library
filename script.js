@@ -95,6 +95,7 @@ async function loadUserProfile() {
     document.querySelectorAll('.auth-logged-out').forEach(el => el.style.display = 'inline-block');
   }
 }
+window.loadUserProfile = loadUserProfile;
 
 let allVideosData = [];
 
@@ -157,8 +158,7 @@ async function fetchVideos() {
 
   allVideosData = videos || [];
   renderVideoCards(allVideosData);
-  
-// 관리자 퀴즈 등록 및 조회용 셀렉트박스 갱신
+
   const quizSelect = document.getElementById('quizVideoSelect');
   if (quizSelect) {
     quizSelect.innerHTML = '<option value="">영상을 선택하세요</option>';
@@ -169,13 +169,11 @@ async function fetchVideos() {
       quizSelect.appendChild(opt);
     });
 
-    // 영상 선택 시 해당 영상의 퀴즈 목록 불러오기 연동
     quizSelect.onchange = (e) => {
       loadAdminQuizzes(e.target.value);
     };
   }
 
-  // 관리자 화면 게시 영상 목록 갱신
   const adminList = document.getElementById('adminVideoList');
   if (adminList) {
     adminList.innerHTML = '';
@@ -197,55 +195,95 @@ async function fetchVideos() {
     }
   }
 }
+window.fetchVideos = fetchVideos;
 
-// 관리자 방: 선택한 영상의 퀴즈 목록 불러오기
-async function loadAdminQuizzes(videoId) {
-  const quizListContainer = document.getElementById('adminQuizList');
-  if (!quizListContainer) return;
+async function deleteVideo(videoId) {
+  if (!confirm('정말 이 영상을 삭제하시겠습니까?')) return;
 
-  if (!videoId) {
-    quizListContainer.innerHTML = '<p class="empty-msg">영상을 먼저 선택해 주세요.</p>';
-    return;
+  if (supabaseClient) {
+    const { error } = await supabaseClient.from('videos').delete().eq('id', videoId);
+    if (error) {
+      alert('삭제 실패: ' + error.message);
+    } else {
+      alert('영상이 삭제되었습니다.');
+      fetchVideos();
+    }
   }
+}
+window.deleteVideo = deleteVideo;
 
-  const { data: quizzes, error } = await supabaseClient
-    .from('quizzes')
+async function loadMyRoomData() {
+  if (!supabaseClient || !supabaseClient.auth) return;
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+
+  const { data: profileData } = await supabaseClient
+    .from('profiles')
+    .select('points')
+    .eq('email', user.email)
+    .single();
+
+  const currentPoints = profileData?.points || 0;
+  const pointsElem = document.getElementById('myRoomPoints');
+  if (pointsElem) pointsElem.textContent = currentPoints.toLocaleString();
+
+  const { data: progressList } = await supabaseClient
+    .from('user_progress')
     .select('*')
-    .eq('video_id', videoId);
+    .eq('user_email', user.email)
+    .order('updated_at', { ascending: false });
 
-  if (error || !quizzes || quizzes.length === 0) {
-    quizListContainer.innerHTML = '<p class="empty-msg">등록된 퀴즈가 없습니다.</p>';
+  const container = document.getElementById('myProgressList');
+  if (!container) return;
+
+  if (!progressList || progressList.length === 0) {
+    container.innerHTML = '<p class="empty-msg">아직 학습 중인 영상이 없습니다. 홈에서 영상을 시청해 보세요!</p>';
     return;
   }
 
-  quizListContainer.innerHTML = '';
-  quizzes.forEach((q, index) => {
-    const item = document.createElement('div');
-    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px;';
-    item.innerHTML = `
-      <div>
-        <strong>Q${index + 1}. ${q.question}</strong>
-        <div style="color: #64748b; font-size: 12px; margin-top: 2px;">정답: ${q.answer}번</div>
+  const completedCount = progressList.filter(item => item.is_completed).length;
+  const inProgressCount = progressList.length - completedCount;
+  const totalRate = Math.round((completedCount / progressList.length) * 100);
+
+  const statInProgress = document.getElementById('statInProgress');
+  const statCompleted = document.getElementById('statCompleted');
+  const statTotalRate = document.getElementById('statTotalRate');
+
+  if (statInProgress) statInProgress.textContent = `${inProgressCount}개`;
+  if (statCompleted) statCompleted.textContent = `${completedCount}개`;
+  if (statTotalRate) statTotalRate.textContent = `${totalRate}%`;
+
+  container.innerHTML = '';
+  progressList.forEach(item => {
+    const isDone = item.is_completed;
+    const card = document.createElement('div');
+    card.className = 'progress-item-card';
+    card.innerHTML = `
+      <div class="progress-item-top">
+        <div>
+          <span class="category-badge">${item.category || '역사'}</span>
+          <strong style="margin-left:8px; font-size:16px;">${item.video_title}</strong>
+        </div>
+        <span class="status-badge ${isDone ? 'done' : 'ing'}">
+          ${isDone ? '✅ 학습 완료' : '▶️ 학습 중'}
+        </span>
       </div>
-      <button type="button" onclick="deleteQuiz('${q.id}', '${videoId}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">퀴즈 삭제</button>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill ${isDone ? 'done' : ''}" style="width: ${item.progress}%;"></div>
+      </div>
+      <div class="progress-item-bottom">
+        <span>진도율: <strong>${item.progress}%</strong></span>
+        ${!isDone 
+          ? `<button type="button" class="btn-complete-study" onclick="completeVideoStudy('${item.id}')">학습 완료하기 (+50P)</button>` 
+          : `<span>포인트 지급 완료</span>`
+        }
+      </div>
     `;
-    quizListContainer.appendChild(item);
+    container.appendChild(card);
   });
 }
-
-// 퀴즈 삭제 함수
-async function deleteQuiz(quizId, videoId) {
-  if (!confirm('정말 이 퀴즈를 삭제하시겠습니까?')) return;
-
-  const { error } = await supabaseClient.from('quizzes').delete().eq('id', quizId);
-  if (error) {
-    alert('퀴즈 삭제 실패: ' + error.message);
-  } else {
-    alert('퀴즈가 삭제되었습니다.');
-    loadAdminQuizzes(videoId); // 목록 새로고침
-  }
-}
-window.deleteQuiz = deleteQuiz;
+window.loadMyRoomData = loadMyRoomData;
 
 async function startVideoStudy(videoId, videoTitle, category) {
   if (!supabaseClient) return;
@@ -305,6 +343,54 @@ async function completeVideoStudy(progressId) {
   loadMyRoomData();
 }
 window.completeVideoStudy = completeVideoStudy;
+
+async function loadAdminQuizzes(videoId) {
+  const quizListContainer = document.getElementById('adminQuizList');
+  if (!quizListContainer) return;
+
+  if (!videoId) {
+    quizListContainer.innerHTML = '<p class="empty-msg">영상을 먼저 선택해 주세요.</p>';
+    return;
+  }
+
+  const { data: quizzes, error } = await supabaseClient
+    .from('quizzes')
+    .select('*')
+    .eq('video_id', videoId);
+
+  if (error || !quizzes || quizzes.length === 0) {
+    quizListContainer.innerHTML = '<p class="empty-msg">등록된 퀴즈가 없습니다.</p>';
+    return;
+  }
+
+  quizListContainer.innerHTML = '';
+  quizzes.forEach((q, index) => {
+    const item = document.createElement('div');
+    item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px;';
+    item.innerHTML = `
+      <div>
+        <strong>Q${index + 1}. ${q.question}</strong>
+        <div style="color: #64748b; font-size: 12px; margin-top: 2px;">정답: ${q.answer}번</div>
+      </div>
+      <button type="button" onclick="deleteQuiz('${q.id}', '${videoId}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">퀴즈 삭제</button>
+    `;
+    quizListContainer.appendChild(item);
+  });
+}
+window.loadAdminQuizzes = loadAdminQuizzes;
+
+async function deleteQuiz(quizId, videoId) {
+  if (!confirm('정말 이 퀴즈를 삭제하시겠습니까?')) return;
+
+  const { error } = await supabaseClient.from('quizzes').delete().eq('id', quizId);
+  if (error) {
+    alert('퀴즈 삭제 실패: ' + error.message);
+  } else {
+    alert('퀴즈가 삭제되었습니다.');
+    loadAdminQuizzes(videoId);
+  }
+}
+window.deleteQuiz = deleteQuiz;
 
 // ==========================================
 // 3. 메인 이벤트 리스너 (DOM 로드 후 실행)
@@ -533,7 +619,10 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('퀴즈 등록 실패: ' + error.message);
       } else {
         alert('퀴즈가 성공적으로 등록되었습니다!');
+        const selectedVideoId = video_id;
         addQuizForm.reset();
+        document.getElementById('quizVideoSelect').value = selectedVideoId;
+        loadAdminQuizzes(selectedVideoId);
       }
     });
   }
