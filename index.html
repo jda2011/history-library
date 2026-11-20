@@ -13,20 +13,21 @@
     <div class="header-container">
       <h1 class="logo" onclick="showView('homeView')">📜 역사 동영상 도서관</h1>
       <nav>
+        <nav>
         <!-- 로그인 전 -->
         <div class="auth-logged-out">
           <button type="button" class="nav-btn btn-blue" onclick="openModal('loginModal')">로그인</button>
           <button type="button" class="nav-btn btn-green" onclick="openModal('signupModal')">회원가입</button>
         </div>
+        
         <!-- 로그인 후 -->
         <div class="auth-logged-in" style="display: none;">
+          <button type="button" class="nav-btn" onclick="showView('homeView')">홈</button>
           <button type="button" class="nav-btn" id="userNavBtnText" onclick="showView('myRoomView')">내 방</button>
           <button type="button" class="nav-btn" onclick="showView('adminView')">관리자 방</button>
           <button type="button" class="nav-btn btn-logout">로그아웃</button>
         </div>
       </nav>
-    </div>
-  </header>
 
   <!-- 메인 화면들 -->
   <main class="content-area">
