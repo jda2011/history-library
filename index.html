@@ -8,37 +8,45 @@
 </head>
 <body>
 
-  <!-- 메인 헤더 (중복 없이 1개만 배치) -->
+  <!-- 상단 네비게이션 헤더 -->
   <header class="main-header">
-    <div class="header-container">
-      <h1 class="logo" onclick="showView('homeView')">📜 역사 동영상 도서관</h1>
-      <nav>
-        <nav>
-        <!-- 로그인 전 -->
-        <div class="auth-logged-out">
-          <button type="button" class="nav-btn btn-blue" onclick="openModal('loginModal')">로그인</button>
-          <button type="button" class="nav-btn btn-green" onclick="openModal('signupModal')">회원가입</button>
-        </div>
-        
-        <!-- 로그인 후 -->
-        <div class="auth-logged-in" style="display: none;">
-          <button type="button" class="nav-btn" onclick="showView('homeView')">홈</button>
-          <button type="button" class="nav-btn" id="userNavBtnText" onclick="showView('myRoomView')">내 방</button>
-          <button type="button" class="nav-btn" onclick="showView('adminView')">관리자 방</button>
-          <button type="button" class="nav-btn btn-logout">로그아웃</button>
-        </div>
-      </nav>
+    <h1 class="logo" onclick="showView('homeView')" style="cursor: pointer;">📜 역사 동영상 도서관</h1>
+    <nav>
+      <!-- 로그인 전 -->
+      <div class="auth-logged-out">
+        <button type="button" class="nav-btn btn-blue" onclick="openModal('loginModal')">로그인</button>
+        <button type="button" class="nav-btn btn-green" onclick="openModal('signupModal')">회원가입</button>
+      </div>
+      
+      <!-- 로그인 후 -->
+      <div class="auth-logged-in" style="display: none;">
+        <button type="button" class="nav-btn" onclick="showView('homeView')">홈</button>
+        <button type="button" class="nav-btn" id="userNavBtnText" onclick="showView('myRoomView')">내 방</button>
+        <button type="button" class="nav-btn" onclick="showView('adminView')">관리자 방</button>
+        <button type="button" class="nav-btn btn-logout">로그아웃</button>
+      </div>
+    </nav>
+  </header>
 
-  <!-- 메인 화면들 -->
+  <!-- 메인 화면 컨텐츠 영역 -->
   <main class="content-area">
-    <!-- 1. 홈 화면 -->
+    <!-- 1. 홈 화면 (시대별 카테고리 필터 포함) -->
     <section id="homeView" class="view-section">
       <h2 class="section-title">📚 역사 동영상 목록</h2>
+
+      <div class="category-filter-bar">
+        <button type="button" class="filter-btn active" onclick="filterVideos('전체', this)">전체</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('고조선·삼국시대', this)">고조선·삼국시대</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('고려시대', this)">고려시대</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('조선시대', this)">조선시대</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('근현대사', this)">근현대사</button>
+        <button type="button" class="filter-btn" onclick="filterVideos('세계사', this)">세계사</button>
+      </div>
+
       <div id="videoList" class="video-grid"></div>
     </section>
 
-    <!-- 2. 내 방 (마이페이지) -->
-    <!-- 2. 내 방 (EBS 나의 학습방 스타일) -->
+    <!-- 2. 내 방 (EBS 학습방 스타일) -->
     <section id="myRoomView" class="view-section" style="display: none;">
       <div class="myroom-header-card">
         <div class="profile-summary">
@@ -54,7 +62,6 @@
         </div>
       </div>
 
-      <!-- 학습 요약 통계 -->
       <div class="stats-grid">
         <div class="stat-card">
           <span class="stat-title">수강 중인 영상</span>
@@ -70,7 +77,6 @@
         </div>
       </div>
 
-      <!-- 현재 학습 중인 영상 & 진도율 목록 -->
       <div class="learning-section">
         <h3 class="sub-section-title">📺 나의 학습 현황</h3>
         <div id="myProgressList" class="progress-list">
@@ -79,8 +85,7 @@
       </div>
     </section>
 
-    <!-- 3. 관리자 센터 -->
-    <!-- 3. 관리자 센터 (직접 제작 영상 업로드 & 관리) -->
+    <!-- 3. 관리자 센터 (영상 업로드 + 퀴즈 등록 + 관리) -->
     <section id="adminView" class="view-section" style="display: none;">
       <div class="admin-header">
         <h2>🛠️ 관리자 스튜디오</h2>
@@ -88,42 +93,73 @@
       </div>
 
       <div class="admin-grid">
-        <!-- 왼쪽: 새 영상 파일 업로드 카드 -->
-        <div class="admin-card">
-          <h3>🎬 새 강의 영상 올리기</h3>
-          <form id="addVideoForm" class="admin-form">
-            <div class="input-group">
-              <label for="videoCategory">시대 카테고리</label>
-              <select id="videoCategory" required>
-                <option value="">카테고리를 선택하세요</option>
-                <option value="고조선·삼국시대">고조선·삼국시대</option>
-                <option value="고려시대">고려시대</option>
-                <option value="조선시대">조선시대</option>
-                <option value="근현대사">근현대사</option>
-                <option value="세계사">세계사</option>
-              </select>
-            </div>
+        <!-- 왼쪽: 영상 업로드 & 퀴즈 등록 -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          <div class="admin-card">
+            <h3>🎬 새 강의 영상 올리기</h3>
+            <form id="addVideoForm" class="admin-form">
+              <div class="input-group">
+                <label for="videoCategory">시대 카테고리</label>
+                <select id="videoCategory" required>
+                  <option value="">카테고리를 선택하세요</option>
+                  <option value="고조선·삼국시대">고조선·삼국시대</option>
+                  <option value="고려시대">고려시대</option>
+                  <option value="조선시대">조선시대</option>
+                  <option value="근현대사">근현대사</option>
+                  <option value="세계사">세계사</option>
+                </select>
+              </div>
 
-            <div class="input-group">
-              <label for="videoTitle">강의 제목</label>
-              <input type="text" id="videoTitle" placeholder="예: 세종대왕과 훈민정음 창제" required>
-            </div>
+              <div class="input-group">
+                <label for="videoTitle">강의 제목</label>
+                <input type="text" id="videoTitle" placeholder="예: 세종대왕과 훈민정음 창제" required>
+              </div>
 
-            <div class="input-group">
-              <label for="videoFile">영상 파일 선택 (.mp4)</label>
-              <input type="file" id="videoFile" accept="video/mp4,video/*" required>
-            </div>
+              <div class="input-group">
+                <label for="videoFile">영상 파일 선택 (.mp4)</label>
+                <input type="file" id="videoFile" accept="video/mp4,video/*" required>
+              </div>
 
-            <div class="input-group">
-              <label for="videoDesc">강의 설명</label>
-              <textarea id="videoDesc" rows="3" placeholder="영상 핵심 내용을 간단히 적어주세요."></textarea>
-            </div>
+              <div class="input-group">
+                <label for="videoDesc">강의 설명</label>
+                <textarea id="videoDesc" rows="3" placeholder="영상 핵심 내용을 간단히 적어주세요."></textarea>
+              </div>
 
-            <button type="submit" id="uploadVideoBtn" class="btn-submit btn-blue">영상 업로드 및 게시</button>
-          </form>
+              <button type="submit" id="uploadVideoBtn" class="btn-submit btn-blue">영상 업로드 및 게시</button>
+            </form>
+          </div>
+
+          <!-- 퀴즈 등록 카드 -->
+          <div class="admin-card">
+            <h3>❓ 강의별 퀴즈 등록</h3>
+            <form id="addQuizForm" class="admin-form">
+              <div class="input-group">
+                <label for="quizVideoSelect">연결할 영상</label>
+                <select id="quizVideoSelect" required>
+                  <option value="">영상을 먼저 선택하세요</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label for="quizQuestion">퀴즈 질문</label>
+                <input type="text" id="quizQuestion" placeholder="예: 훈민정음을 창제한 왕은 누구인가요?" required>
+              </div>
+              <div class="input-group">
+                <label>보기 4개</label>
+                <input type="text" id="quizOpt1" placeholder="1번 보기" required style="margin-bottom: 6px;">
+                <input type="text" id="quizOpt2" placeholder="2번 보기" required style="margin-bottom: 6px;">
+                <input type="text" id="quizOpt3" placeholder="3번 보기" required style="margin-bottom: 6px;">
+                <input type="text" id="quizOpt4" placeholder="4번 보기" required>
+              </div>
+              <div class="input-group">
+                <label for="quizAnswer">정답 번호 (1~4)</label>
+                <input type="number" id="quizAnswer" min="1" max="4" placeholder="예: 1" required>
+              </div>
+              <button type="submit" class="btn-submit btn-green">퀴즈 등록하기</button>
+            </form>
+          </div>
         </div>
 
-        <!-- 오른쪽: 업로드된 영상 관리 목록 -->
+        <!-- 오른쪽: 게시된 영상 목록 및 삭제 -->
         <div class="admin-card">
           <h3>📂 게시된 강의 목록</h3>
           <div id="adminVideoList" class="admin-list-box">
@@ -132,19 +168,11 @@
         </div>
       </div>
     </section>
-      <!-- 영상 등록 폼 -->
-      <form id="addVideoForm" class="admin-form">
-        <h3>영상 등록</h3>
-        <input type="text" id="videoCategory" placeholder="카테고리 (예: 조선시대)" required>
-        <input type="text" id="videoTitle" placeholder="영상 제목" required>
-        <input type="url" id="videoUrl" placeholder="YouTube Embed URL" required>
-        <textarea id="videoDesc" placeholder="영상 설명"></textarea>
-        <button type="submit" class="btn-submit btn-blue">영상 게시하기</button>
-      </form>
-    </section>
   </main>
 
-  <!-- 1. 로그인 모달 (평소엔 style="display: none;" 으로 숨겨져 있음) -->
+  <!-- ================= 모달 창 영역 ================= -->
+
+  <!-- 1. 로그인 모달 -->
   <div id="loginModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
@@ -166,7 +194,6 @@
 
         <button type="submit" class="btn-submit btn-blue">로그인하기</button>
 
-        <!-- 이메일 찾기 | 비밀번호 찾기 링크 -->
         <div class="auth-links">
           <a href="#" onclick="switchModal('loginModal', 'findEmailModal', event)">이메일 찾기</a>
           <span> | </span>
@@ -211,7 +238,7 @@
     </div>
   </div>
 
-  <!-- 3. 닉네임으로 이메일 찾기 모달 -->
+  <!-- 3. 이메일 찾기 모달 -->
   <div id="findEmailModal" class="modal" style="display: none;">
     <div class="modal-content">
       <span class="close-modal" onclick="closeModal('findEmailModal')">&times;</span>
@@ -252,5 +279,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
-  
