@@ -387,3 +387,144 @@ document.addEventListener('DOMContentLoaded', () => {
 
   showView('homeView');
 });
+
+// ==========================================
+// 개인 방(EBS 학습방) 데이터 로드 및 진도 업데이트
+// ==========================================
+
+async function loadMyRoomData() {
+  if (!supabaseClient || !supabaseClient.auth) return;
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+
+  // 1) 보유 포인트 조회 (profiles 테이블)
+  const { data: profileData } = await supabaseClient
+    .from('profiles')
+    .select('points')
+    .eq('email', user.email)
+    .single();
+
+  const currentPoints = profileData?.points || 0;
+  const pointsElem = document.getElementById('myRoomPoints');
+  if (pointsElem) pointsElem.textContent = currentPoints.toLocaleString();
+
+  // 2) 내 학습 진도 목록 조회 (user_progress 테이블)
+  const { data: progressList } = await supabaseClient
+    .from('user_progress')
+    .select('*')
+    .eq('user_email', user.email)
+    .order('updated_at', { ascending: false });
+
+  const container = document.getElementById('myProgressList');
+  if (!container) return;
+
+  if (!progressList || progressList.length === 0) {
+    container.innerHTML = '<p class="empty-msg">아직 학습 중인 영상이 없습니다. 홈에서 영상을 시청해 보세요!</p>';
+    return;
+  }
+
+  // 통계 계산
+  const completedCount = progressList.filter(item => item.is_completed).length;
+  const inProgressCount = progressList.length - completedCount;
+  const totalRate = Math.round((completedCount / progressList.length) * 100);
+
+  document.getElementById('statInProgress').textContent = `${inProgressCount}개`;
+  document.getElementById('statCompleted').textContent = `${completedCount}개`;
+  document.getElementById('statTotalRate').textContent = `${totalRate}%`;
+
+  // 목록 렌더링
+  container.innerHTML = '';
+  progressList.forEach(item => {
+    const isDone = item.is_completed;
+    const card = document.createElement('div');
+    card.className = 'progress-item-card';
+    card.innerHTML = `
+      <div class="progress-item-top">
+        <div>
+          <span class="category-badge">${item.category || '역사'}</span>
+          <strong style="margin-left:8px; font-size:16px;">${item.video_title}</strong>
+        </div>
+        <span class="status-badge ${isDone ? 'done' : 'ing'}">
+          ${isDone ? '✅ 학습 완료' : '▶️ 학습 중'}
+        </span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill ${isDone ? 'done' : ''}" style="width: ${item.progress}%;"></div>
+      </div>
+      <div class="progress-item-bottom">
+        <span>진도율: <strong>${item.progress}%</strong></span>
+        ${!isDone 
+          ? `<button type="button" class="btn-complete-study" onclick="completeVideoStudy('${item.id}')">학습 완료하기 (+50P)</button>` 
+          : `<span>포인트 지급 완료</span>`
+        }
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+window.loadMyRoomData = loadMyRoomData;
+
+// 홈에서 영상 '학습하기' 클릭 시 진도 기록 시작 (진도율 50%로 등록)
+async function startVideoStudy(videoId, videoTitle, category) {
+  if (!supabaseClient) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) {
+    alert('로그인 후 학습 기록을 남길 수 있습니다!');
+    openModal('loginModal');
+    return;
+  }
+
+  // 이미 기록이 있는지 확인
+  const { data: existing } = await supabaseClient
+    .from('user_progress')
+    .select('*')
+    .eq('user_email', user.email)
+    .eq('video_id', videoId);
+
+  if (!existing || existing.length === 0) {
+    await supabaseClient.from('user_progress').insert([{
+      user_email: user.email,
+      video_id: videoId,
+      video_title: videoTitle,
+      category: category,
+      progress: 50,
+      is_completed: false
+    }]);
+    alert(`'${videoTitle}' 학습이 시작되었습니다! 내 학습방에서 진도를 확인할 수 있어요.`);
+  } else {
+    alert('이미 내 학습방에 등록된 영상입니다!');
+  }
+  loadMyRoomData();
+}
+window.startVideoStudy = startVideoStudy;
+
+// 학습 완료 처리 및 +50 포인트 적립
+async function completeVideoStudy(progressId) {
+  if (!supabaseClient) return;
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  if (!user) return;
+
+  // 1) 진도율 100% 및 완료 처리
+  await supabaseClient
+    .from('user_progress')
+    .update({ progress: 100, is_completed: true })
+    .eq('id', progressId);
+
+  // 2) 현재 포인트 가져와서 +50점 추가
+  const { data: profile } = await supabaseClient
+    .from('profiles')
+    .select('points')
+    .eq('email', user.email)
+    .single();
+
+  const newPoints = (profile?.points || 0) + 50;
+  await supabaseClient
+    .from('profiles')
+    .update({ points: newPoints })
+    .eq('email', user.email);
+
+  alert('🎉 학습을 완료하여 50 포인트가 적립되었습니다!');
+  loadMyRoomData();
+}
+window.completeVideoStudy = completeVideoStudy;
